@@ -21,6 +21,9 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
 
   # Number of units
   n <- nrow(z)
+  if(n < 2){
+    stop("minimum number of units must be >2")
+  }
   # Number of options per unit
   options <- ncol(z)
   # Number of budget levels
