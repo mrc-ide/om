@@ -22,3 +22,39 @@ matrix_to_idf <- function(x, z = "z"){
 
   return(df)
 }
+
+#' Wrangle allocations
+#'
+#' @inheritParams output
+#'
+#' @return
+allocation_output <- function(solution, budget){
+  solution |>
+    # Extract p variable indicating proportion of each budget to each unit
+    ompr::get_solution(p[i, j]) |>
+    dplyr::mutate(allocation = round(.data$value * budget[j], 6)) |>
+    dplyr::rename("budget_level" = .data$j) |>
+    dplyr::select(.data$i, .data$budget_level, .data$allocation) |>
+    tidyr::pivot_wider(.data$i, names_from = .data$budget_level, values_from = .data$allocation, names_prefix = "budget_level_")
+}
+
+#' Wrangle solution output
+#'
+#' @param solution Model solution
+#' @param z_df data.frame of z
+#' @param cost_df data.frame of cost
+#' @inheritParams om
+#'
+#' @return Formatted output
+output <- function(solution, z_df, cost_df, budget){
+  allocation <- allocation_output(solution = solution, budget = budget)
+
+  solution |>
+    ompr::get_solution(x[i, j]) |>
+    dplyr::filter(.data$value > 0) |>
+    dplyr::left_join(cost_df, by = c("i", "j")) |>
+    dplyr::left_join(z_df, by = c("i", "j")) |>
+    dplyr::arrange(.data$i) |>
+    dplyr::select(-.data$variable, -.data$value) |>
+    dplyr::left_join(allocation, by = "i")
+}
