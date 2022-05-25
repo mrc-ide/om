@@ -1,8 +1,8 @@
-#' Brute foprce search for single budget level
+#' Brute force search for single budget level
 #'
 #' @inheritParams om
 #'
-#' @return
+#' @return Brute force solution
 brute <- function(z, cost, budget){
   if(!is.matrix(z) | !is.matrix(cost)  | !all(dim(z) == dim(cost))){
     stop("z and cost inputs must both be matrices with the same dimensions")

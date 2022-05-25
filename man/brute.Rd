@@ -2,7 +2,7 @@
 % Please edit documentation in R/brute.R
 \name{brute}
 \alias{brute}
-\title{Brute foprce search for single budget level}
+\title{Brute force search for single budget level}
 \usage{
 brute(z, cost, budget)
 }
@@ -16,8 +16,8 @@ If all units do not have all options, fill cost with NA.}
 \item{budget}{vector of budgets}
 }
 \value{
-
+Brute force solution
 }
 \description{
-Brute foprce search for single budget level
+Brute force search for single budget level
 }

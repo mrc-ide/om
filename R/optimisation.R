@@ -9,6 +9,8 @@
 #'   fill = binary indicator to show if Unit[i] has access to budget[j].
 #' @param sense Optimisation target, can be "min" or "max"
 #'
+#' @import ROI.plugin.glpk ompr ompr.roi
+#'
 #' @return Optimsised solution
 #' @export
 om <- function(z, cost, budget, recipients = NULL, sense = "max"){
@@ -28,6 +30,11 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
   options <- ncol(z)
   # Number of budget levels
   budget_n <- length(budget)
+
+  # Check missing values match
+  if(!identical(which(is.na(z)), which(is.na(cost)))){
+    stop("Missing values do not match for cost and z")
+  }
 
   # Set missing values (these should never be possible to choose)
   cost[is.na(cost)] <- sum(budget) + 1
@@ -57,11 +64,6 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
   cost_df <- matrix_to_idf(cost, z = "cost")
   out <- output(solution = solution, z_df = z_df, cost_df = cost_df, budget = budget)
 
-  message("Optimisation complete")
-  message("z = ", sum(out$z))
-  message("cost = ", sum(out$cost))
-  message("Budget spend = ", paste(colSums(out[,grepl("budget", colnames(out)), drop = FALSE]), collapse = ", "))
-
   return(out)
 }
 
@@ -69,29 +71,29 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
 #'
 #' @param n Number of units
 #' @param options Maximum number of options per unit
-#' @param z Matrix of impact
-#' @param cost Matrix of cost
-#' @param sense Optimisation can be "min" or "max"
 #' @param budget_n Number of budget levels
 #' @param not_recipients Binary matrix indicating units not allowed to access a given budget level
+#' @inheritParams om
 #'
 #' @return ompr model
 create_model <- function(n, options, z, cost, budget, budget_n, not_recipients, sense){
+  x <- p <- i <- j <- NULL
+
   model <- ompr::MIPModel() |>
     # Binary indicator of intervention package (j) choosen for each unit (i)
     ompr::add_variable(x[i, j], i = 1:n, j = 1:options, type = "binary") |>
     # Objective is to maximise, or minimise z
-    ompr::set_objective(sum_over(z[i, j] * x[i, j], i = 1:n, j = 1:options), sense = sense) |>
+    ompr::set_objective(ompr::sum_over(z[i, j] * x[i, j], i = 1:n, j = 1:options), sense = sense) |>
     # Only one intervention package option per unit
-    ompr::add_constraint(sum_over(x[i, j], j = 1:options) == 1, i = 1:n) |>
+    ompr::add_constraint(ompr::sum_over(x[i, j], j = 1:options) == 1, i = 1:n) |>
     # The proportion of each level of budget (j) going to each uit (i)
     ompr::add_variable(p[i, j], i = 1:n, j = 1:budget_n, type = "continuous", lb = 0, ub = 1) |>
     # The sum of proportions for each budget level must not exceed 1
-    ompr::add_constraint(sum_over(p[i, j], i = 1:n) <= 1, j = 1:budget_n) |>
+    ompr::add_constraint(ompr::sum_over(p[i, j], i = 1:n) <= 1, j = 1:budget_n) |>
     # Budget can only be allcoated to specified units
-    ompr::add_constraint(sum_over(p[i, j] * not_recipients[i,j], i = 1:n) == 0, j = 1:budget_n) |>
+    ompr::add_constraint(ompr::sum_over(p[i, j] * not_recipients[i,j], i = 1:n) == 0, j = 1:budget_n) |>
     # Total allocation of budget  = total cost for each country
-    ompr::add_constraint(sum_over(p[i, j] * budget[j], j = 1:budget_n) == sum_over(cost[i, j] * x[i, j], j = 1:options), i = 1:n)
+    ompr::add_constraint(ompr::sum_over(p[i, j] * budget[j], j = 1:budget_n) == ompr::sum_over(cost[i, j] * x[i, j], j = 1:options), i = 1:n)
 }
 
 #' Find solution

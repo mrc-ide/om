@@ -27,8 +27,10 @@ matrix_to_idf <- function(x, z = "z"){
 #'
 #' @inheritParams output
 #'
-#' @return
+#' @return Allocation proportions
 allocation_output <- function(solution, budget){
+  p <- i <- j <- NULL
+
   solution |>
     # Extract p variable indicating proportion of each budget to each unit
     ompr::get_solution(p[i, j]) |>
@@ -47,6 +49,8 @@ allocation_output <- function(solution, budget){
 #'
 #' @return Formatted output
 output <- function(solution, z_df, cost_df, budget){
+  x <- i <- j <- NULL
+
   allocation <- allocation_output(solution = solution, budget = budget)
 
   solution |>

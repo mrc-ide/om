@@ -39,4 +39,124 @@ test_that("Single budget level optimisation works", {
   }
   ##############################################################################
 
+  # Unordered larger random examples with unlimited budget #####################
+  set.seed(1)
+  for(i in 1:5){
+    n <- 50
+    options <- 10
+    cost <- matrix(rpois(n * options, 10), ncol = options, nrow = n, byrow = TRUE)
+    z <- cost * 2
+    budget <- sum(cost)
+    # Maximise
+    o6 <- om(z = z, cost = cost, budget = budget)
+    expect_equal(sum(o6$z), sum(apply(z, 1, max)))
+    # Minimise
+    o7 <- om(z = z, cost = cost, budget = budget, sense = "min")
+    expect_equal(sum(o7$z), sum(apply(z, 1, min)))
+  }
+  ##############################################################################
+
+  # Non-linear relationship between impact and cost ############################
+  n <- 10
+  options <- 20
+  z <- matrix(1:options, ncol = options, nrow = n, byrow = TRUE)
+  cost <- exp(0.5 * z)
+
+  # Unlimited budget
+  budget <- sum(cost)
+  # Maximise
+  o8 <- om(z = z, cost = cost, budget = budget)
+  expect_equal(sum(o8$z), sum(apply(z, 1, max)))
+  # Minimise
+  o9 <- om(z = z, cost = cost, budget = budget, sense = "min")
+  expect_equal(sum(o9$z), sum(apply(z, 1, min)))
+
+  # Limited budget - due to non-linearity, we expect all units to be given
+    # equal share (not all money to a single unit)
+  for(i in 1:options){
+    budget <- sum(cost[,i])
+    # Maximise
+    o9 <- om(z = z, cost = cost, budget = budget)
+    expect_true(all(o9$z == i))
+  }
+  ##############################################################################
+})
+
+test_that("Multiple budget level optimisation works", {
+  n <- 2
+  options <- 2
+  cost <- matrix(1:options, ncol = options, nrow = n, byrow = TRUE)
+  z <- cost * 2
+
+  # Two levels, recipients = all ###############################################
+  budget <- c(1, 1)
+  o10 <- om(z = z, cost = cost, budget = budget)
+  budget <- sum(budget)
+  o11 <- om(z = z, cost = cost, budget = budget)
+  # Output should == single level with same total budget
+  expect_identical(o10[,c("i", "j", "z")], o11[,c("i", "j", "z")])
+  ##############################################################################
+
+  # Two levels, recipients = mixed, unlimited budget ###########################
+  n <- 50
+  options <- 10
+  cost <- matrix(rpois(n * options, 10), ncol = options, nrow = n, byrow = TRUE)
+  z <- cost * 2
+  budget <- round(c(sum(cost), sum(cost)))
+  recipients <- cbind(
+    c(rep(1, 40), rep(0, 10)),
+    c(rep(0, 30), rep(1, 20))
+  )
+  # Maximise
+  o12 <- om(z = z, cost = cost, budget = budget, recipients = recipients)
+  expect_true(sum(o12$cost) <= sum(budget))
+  expect_lt(sum(o12$budget_level_1), budget[1])
+  expect_lt(sum(o12$budget_level_2), budget[2])
+  expect_equal(sum(o12$z), sum(apply(z, 1, max)))
+  expect_equal(sum(o12$budget_level_1[recipients[,1] == 0]), 0)
+  expect_equal(sum(o12$budget_level_2[recipients[,2] == 0]), 0)
+  ##############################################################################
+
+  # Two levels, recipients = mixed, limited budget #############################
+  n <- 50
+  options <- 10
+  cost <- matrix(rpois(n * options, 10), ncol = options, nrow = n, byrow = TRUE)
+  z <- cost * 2
+  budget <- round(c(mean(cost) * (n/2), mean(cost) * (n/3)))
+  recipients <- cbind(
+    c(rep(1, 40), rep(0, 10)),
+    c(rep(0, 30), rep(1, 20))
+  )
+  # Maximise
+  o13 <- om(z = z, cost = cost, budget = budget, recipients = recipients)
+  expect_true(sum(o13$cost) <= sum(budget))
+  expect_lte(round(sum(o13$budget_level_1)), budget[1])
+  expect_lte(round(sum(o13$budget_level_2)), budget[2])
+  expect_equal(sum(o13$budget_level_1[recipients[,1] == 0]), 0)
+  expect_equal(sum(o13$budget_level_2[recipients[,2] == 0]), 0)
+  ##############################################################################
+})
+
+test_that("Ragged array works", {
+  n <- 5
+  options <- 5
+  cost <- matrix(1:options, ncol = options, nrow = n, byrow = TRUE)
+  z <- cost * 2
+
+  cost[5, 4] <- NA
+  z[5, 4] <- NA
+
+  # Unlimited budget ###########################################################
+  budget <- 100
+  # Maximise
+  o14 <- om(z = z, cost = cost, budget = budget)
+  expect_equal(sum(o14$z), sum(apply(z, 1, max, na.rm = TRUE)))
+  ##############################################################################
+
+  # Unmatched missing ##########################################################
+  cost[1, 1] <- NA
+  expect_error(om(z = z, cost = cost, budget = budget),
+               "Missing values do not match for cost and z")
+  ##############################################################################
+
 })

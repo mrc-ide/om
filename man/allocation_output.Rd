@@ -12,7 +12,7 @@ allocation_output(solution, budget)
 \item{budget}{vector of budgets}
 }
 \value{
-
+Allocation proportions
 }
 \description{
 Wrangle allocations

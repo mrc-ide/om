@@ -11,15 +11,19 @@ create_model(n, options, z, cost, budget, budget_n, not_recipients, sense)
 
 \item{options}{Maximum number of options per unit}
 
-\item{z}{Matrix of impact}
+\item{z}{Matrix of impact. Rows[i] = units, cols[j] = options, fill = impact measure.
+If all units do not have all options, fill z with NA.}
 
-\item{cost}{Matrix of cost}
+\item{cost}{Matrix of cost. Rows[i] = units, cols[j] = options, fill = cost.
+If all units do not have all options, fill cost with NA.}
+
+\item{budget}{vector of budgets}
 
 \item{budget_n}{Number of budget levels}
 
 \item{not_recipients}{Binary matrix indicating units not allowed to access a given budget level}
 
-\item{sense}{Optimisation can be "min" or "max"}
+\item{sense}{Optimisation target, can be "min" or "max"}
 }
 \value{
 ompr model
