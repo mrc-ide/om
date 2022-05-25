@@ -11,6 +11,8 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 Suggests: 
+    knitr,
+    rmarkdown,
     roxygen2,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -22,3 +24,4 @@ Imports:
     dplyr,
     rlang (>= 0.4.11),
     tidyr
+VignetteBuilder: knitr

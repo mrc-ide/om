@@ -1,0 +1,77 @@
+---
+title: "Complex budgets"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Complex budgets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(om)
+```
+In the introductory vignette, we saw how omland could optimise the national budget
+given the following modelled cost and impact estimates
+
+```{r}
+omland_output <- data.frame(
+  unit = rep(1:10, each = 5),
+  option = rep(1:5, 10),
+  impact = rep(0:4, 10),
+  cost = rep(c(0, 5, 10, 15, 20), 10)  * rep(c(rep(1, 5), rep(5, 5)), each = 5)
+)
+impact_matrix <- matrix(omland_output$impact, nrow = 10, ncol =  5, byrow = TRUE)
+cost_matrix <- matrix(omland_output$cost, nrow = 10, ncol =  5, byrow = TRUE)
+
+```
+
+Breaking news!!! A regional initiative has been set up to increase funding in 
+two of omland's sub-national units, units number 9 and 10. An additional $200
+has been made available to omland, but spending must be restricted units 9 and 10.
+
+Fortunately for omland, om can deal with multiple budget levels. Let's look at how
+we can set this up. We now specify two budgets, the national and regional
+
+```{r}
+budget <- c(100, 200)
+```
+
+We also need to specify which sub-national units have access to which parts of the
+budget. We can do this with another matrix. In the `recipients` matrix, each row
+is a sub-national unit, and each column corresponds to a level in our budget vector.
+A 1 indicates that a sub-national unit may receive a share of that budget, a 0
+indicates it can not receive any of it.
+
+```{r}
+recipients <- cbind(
+  rep(1, 10),
+  c(rep(0, 8), rep(1, 2))
+)
+recipients
+```
+
+Here, we see that only rows 9 and 10 have access to both budget levels. Now we can
+optimise again
+
+```{r}
+optimised <- om(z = impact_matrix, cost = cost_matrix, budget = budget,
+                recipients = recipients)
+optimised
+```
+
+Now we see that the first budget level, available to all of omland, is shared
+across the first 5 sub-national units, just like in the introductory example. 
+However, thanks to the regional initiative, omland can now spend an additional $200
+in sub-national units 9 and 10, improving the overall impact. The columns 
+`budget_level_1` and `budget_level_2` show us how each section of omland's 
+budget is distributed. 
+
+You can add more budget levels by modifying the `budget` and `recipients` inputs.
+

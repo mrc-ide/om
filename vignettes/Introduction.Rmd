@@ -1,0 +1,108 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(om)
+```
+
+<img src="omland_flag.png" align="right" width=30% height=30%/>
+
+We are often faced with challenging questions such as "what is the optimum mix
+of spatially-disaggregated interventions?". Answering questions of this kind
+is often made harder by the fact that, in most cases, there are budget limitations
+in place which mean we can't afford all possible combinations of intervention
+packages. om is here to help with this kind of budget-constrained optimisation
+challenge for malaria modelling.
+
+First, let's create a simple scenario to test out om. We have a country, omland,
+which has 10 sub-national units where different malaria intervention packages
+can be stratified. For each sub-national unit there are 5 different packages that
+could be implemented. For each sub-national unit and intervention package we can 
+estimate the impact and cost using a malaria simulation model. Unfortunately,
+omland has a finite health budget and can only assign $100 to malaria interventions.
+
+How should omland spend the $100 to maximise the impact of their malaria control
+campaign?
+
+Let's start with some malaria model outputs for omland. This is a data.frame showing
+the modelled cost and impact of each intervention package option, for each sub-national
+unit.
+
+```{r}
+omland_output <- data.frame(
+  unit = rep(1:10, each = 5),
+  option = rep(1:5, 10),
+  impact = rep(0:4, 10),
+  cost = rep(c(0, 5, 10, 15, 20), 10)  * rep(c(rep(1, 5), rep(5, 5)), each = 5)
+)
+head(omland_output)
+```
+
+We also can specify the budget
+
+```{r}
+budget <- 100
+```
+
+To optimise omland's budget spend in R, we need to provide some inputs as matrices,
+lets convert our data.frame now
+
+```{r}
+# Each row is a spatial unit, each column and intervention package
+impact_matrix <- matrix(omland_output$impact, nrow = 10, ncol =  5, byrow = TRUE)
+impact_matrix
+cost_matrix <- matrix(omland_output$cost, nrow = 10, ncol =  5, byrow = TRUE)
+# We can see that intervention packages in some spatial units are more expensive than others
+cost_matrix
+```
+
+With these inputs, we can now use om to optimise
+
+```{r}
+optimised <- om(z = impact_matrix, cost = cost_matrix, budget = budget)
+optimised
+```
+
+Let's breakdown omland's optimal solution. In the output, i represents the spatial 
+unit and j the intervention package, so for each spatial unit, we have chosen
+one package. We can also see the cost and impact of each package chosen. We can
+see that in spatial units 1 to 5, we've chosen the most expensive package, and in
+spatial units 6 to 10 omland doesn't spend anything. This makes sense -
+the interventions in spatial unit 1-5 are a lot cheaper ($s per impact) than in 
+spatial units 5-10!
+
+We can also see that the total cost does not exceed omland's budget of $100 - phew!
+```{r}
+sum(optimised$cost)
+```
+
+We can check to see what happens if omland's malaria budget increases:
+```{r}
+new_budget <- 10000
+optimised <- om(z = impact_matrix, cost = cost_matrix, budget = new_budget)
+optimised
+```
+
+Great - now omland can afford the most expensive, and most impactful, interverntion
+package in all subnational-units!
+
+If not all options are available for all units we can just replace them with NA
+```{r}
+impact_matrix[1, 5] <- NA
+cost_matrix[1, 5] <- NA
+optimised <- om(z = impact_matrix, cost = cost_matrix, budget = new_budget)
+optimised
+```
