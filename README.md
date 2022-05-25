@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# om
+# om <img src="man/figures/om_hex.png" align="right" width=30% height=30% />
 
 <!-- badges: start -->
 
@@ -13,7 +13,18 @@ public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostat
 coverage](https://codecov.io/gh/mrc-ide/om/branch/main/graph/badge.svg)](https://app.codecov.io/gh/mrc-ide/om?branch=main)
 <!-- badges: end -->
 
-The goal of om is to …
+om can be used to find solutions to budget-optimisation challenges. This
+might be finding the optimal mix of spatially-targeted intervention
+packages across a country that are affordable within a specified budget
+envelope. om can also deal with optimiastions where multiple budgets may
+be available to difference subsets of spaital units. For example, we may
+want to maximise the impact of a global-donor budget to be optimised
+across multiple countries, combined with country domestic budgets.
+
+All of the clever-stuff in the background is handled by the superb ompr
+package. Please cite the ompr package when using om (`citation("ompr")`)
+and be sure to check it out
+[here](https://dirkschumacher.github.io/ompr/)!
 
 ## Installation
 
