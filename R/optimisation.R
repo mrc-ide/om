@@ -18,13 +18,13 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
     stop("z and cost inputs must both be matrices with the same dimensions")
   }
   if(!is.numeric(budget) | !is.vector(budget) | !all(is.finite(budget))){
-    stop("budget must be a (finite) numeric vector")
+    stop("budget must be a finite numeric vector")
   }
 
   # Number of units
   n <- nrow(z)
   if(n < 2){
-    stop("minimum number of units must be >2")
+    stop("minimum number of units is 2")
   }
   # Number of options per unit
   options <- ncol(z)
@@ -44,7 +44,7 @@ om <- function(z, cost, budget, recipients = NULL, sense = "max"){
   if(is.null(recipients)){
     recipients <- matrix(1, nrow = n, ncol = budget_n)
   }
-  if(nrow(recipients) != n | ncol(recipients) != budget_n | !is.matrix(recipients)){
+  if(nrow(recipients) != n | ncol(recipients) != budget_n){
     stop("recipients must be a matrix with n unit rows and n budget level columns")
   }
   # Create the not-recipients matrix

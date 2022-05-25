@@ -158,5 +158,43 @@ test_that("Ragged array works", {
   expect_error(om(z = z, cost = cost, budget = budget),
                "Missing values do not match for cost and z")
   ##############################################################################
+})
 
+test_that("Input checks work", {
+  n <- 5
+  options <- 5
+  cost <- matrix(1:options, ncol = options, nrow = n, byrow = TRUE)
+  z <- cost * 2
+  budget <- 100
+
+  expect_error(om(z = 1:2, cost = cost, budget = budget),
+               "z and cost inputs must both be matrices with the same dimensions")
+  expect_error(om(z = z, cost = 1:2, budget = budget),
+               "z and cost inputs must both be matrices with the same dimensions")
+  expect_error(om(z = z[1:2,], cost = cost, budget = budget),
+               "z and cost inputs must both be matrices with the same dimensions")
+
+  expect_error(om(z = z, cost = cost, budget = "A"),
+               "budget must be a finite numeric vector")
+  expect_error(om(z = z, cost = cost, budget = Inf),
+               "budget must be a finite numeric vector")
+  expect_error(om(z = z, cost = cost, budget = z),
+               "budget must be a finite numeric vector")
+
+  expect_error(om(z = z[1,,drop = FALSE], cost = cost[1,,drop = FALSE], budget = budget),
+               "minimum number of units is 2")
+
+  budget <- c(100, 100)
+  recipients <- rbind(
+    c(1, 1),
+    c(1, 1),
+    c(1, 1),
+    c(1, 0),
+    c(0, 1)
+  )
+
+  expect_error(om(z = z, cost = cost, budget = budget, recipients = recipients[,1, drop = FALSE]),
+               "recipients must be a matrix with n unit rows and n budget level column")
+  expect_error(om(z = z, cost = cost, budget = budget, recipients = recipients[1,, drop = FALSE]),
+               "recipients must be a matrix with n unit rows and n budget level column")
 })
