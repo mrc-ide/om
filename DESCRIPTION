@@ -1,11 +1,11 @@
 Package: om
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Optimiation of Malaria Budgets
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: c(
+    person("Pete", "Winskill", email = "p.winskill@imperial.ac.uk", role = c("aut", "cre"))
+    )
+Description: om can be used to find solutions to budget-optimisation challenges.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
