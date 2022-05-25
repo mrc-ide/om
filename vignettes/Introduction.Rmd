@@ -96,7 +96,7 @@ optimised <- om(z = impact_matrix, cost = cost_matrix, budget = new_budget)
 optimised
 ```
 
-Great - now omland can afford the most expensive, and most impactful, interverntion
+Great - now omland can afford the most expensive, and most impactful, intervention
 package in all subnational-units!
 
 If not all options are available for all units we can just replace them with NA

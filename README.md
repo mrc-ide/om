@@ -26,6 +26,15 @@ package. Please cite the ompr package when using om (`citation("ompr")`)
 and be sure to check it out
 [here](https://dirkschumacher.github.io/ompr/)!
 
+To get started, take a look at the [introductory
+vignette](https://mrc-ide.github.io/om/articles/Introduction.html)
+
+Updates, reviews and improvements are encouraged via
+[PRs](https://github.com/mrc-ide/om/pulls)!
+
+Any issues or clarifications? Please post on the [issues page
+here](https://github.com/mrc-ide/om/issues).
+
 ## Installation
 
 You can install the development version of om like so:
