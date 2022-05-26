@@ -75,7 +75,7 @@
 <span class="co">#&gt; Loading required package: ROI.plugin.glpk</span>
 <span class="co">#&gt; Loading required package: ompr</span>
 <span class="co">#&gt; Loading required package: ompr.roi</span></code></pre></div>
-<p>In the introductory vignette, we saw how omland could optimise the national budget given the following modelled cost and impact estimates</p>
+<p>In the introductory vignette, we saw how Omland could optimise the national budget given the following modelled cost and impact estimates</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">omland_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>
   unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,
@@ -85,11 +85,11 @@
 <span class="op">)</span>
 <span class="va">impact_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">omland_output</span><span class="op">$</span><span class="va">impact</span>, nrow <span class="op">=</span> <span class="fl">10</span>, ncol <span class="op">=</span>  <span class="fl">5</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">cost_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">omland_output</span><span class="op">$</span><span class="va">cost</span>, nrow <span class="op">=</span> <span class="fl">10</span>, ncol <span class="op">=</span>  <span class="fl">5</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p>Breaking news!!! A regional initiative has been set up to increase funding in two of omland’s sub-national units, units number 9 and 10. An additional $200 has been made available to omland, but spending must be restricted units 9 and 10.</p>
-<p>Fortunately for omland, om can deal with multiple budget levels. Let’s look at how we can set this up. We now specify two budgets, the national and regional</p>
+<p>Breaking news!!! A regional initiative has been set up to increase funding in two of Omland’s sub-national units, units number 9 and 10. An additional $200 has been made available to Omland, but spending must be restricted units 9 and 10.</p>
+<p>Fortunately for Omland, om can deal with multiple budget levels. Let’s look at how we can set this up. We now specify two budgets, the national and regional</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">budget</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">200</span><span class="op">)</span></code></pre></div>
-<p>We also need to specify which sub-national units have access to which parts of the budget. We can do this with another matrix. In the <code>recipients</code> matrix, each row is a sub-national unit, and each column corresponds to a level in our budget vector. A 1 indicates that a sub-national unit may receive a share of that budget, a 0 indicates it can not receive any of it.</p>
+<p>We also need to specify which sub-national units have access to which parts of the budget. We can do this with another matrix. In the <code>recipients</code> matrix, each row is a sub-national unit, and each column corresponds to a level in our budget vector. A <code>1</code> indicates that a sub-national unit may receive a share of that budget, a <code>0</code> indicates it can not receive any of it.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">recipients</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>
   <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span>,
@@ -123,7 +123,7 @@
 <span class="co">#&gt; 8   8 1    0 0              0              0</span>
 <span class="co">#&gt; 9   9 5  100 4              0            100</span>
 <span class="co">#&gt; 10 10 5  100 4              0            100</span></code></pre></div>
-<p>Now we see that the first budget level, available to all of omland, is shared across the first 5 sub-national units, just like in the introductory example. However, thanks to the regional initiative, omland can now spend an additional $200 in sub-national units 9 and 10, improving the overall impact. The columns <code>budget_level_1</code> and <code>budget_level_2</code> show us how each section of omland’s budget is distributed.</p>
+<p>Now we see that the first budget level, available to all of Omland, is shared across the first 5 sub-national units, just like in the introductory example. However, thanks to the regional initiative, Omland can now spend an additional $200 in sub-national units 9 and 10, improving the overall impact. The columns <code>budget_level_1</code> and <code>budget_level_2</code> show us how each section of Omland’s budget is distributed.</p>
 <p>You can add more budget levels by modifying the <code>budget</code> and <code>recipients</code> inputs.</p>
   </main>
 </div>

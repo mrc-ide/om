@@ -76,10 +76,10 @@
 <span class="co">#&gt; Loading required package: ompr</span>
 <span class="co">#&gt; Loading required package: ompr.roi</span></code></pre></div>
 <p><img src="omland_flag.png" align="right" width="30%" height="30%/"></p>
-<p>We are often faced with challenging questions such as “what is the optimum mix of spatially-disaggregated interventions?”. Answering questions of this kind is often made harder by the fact that, in most cases, there are budget limitations in place which mean we can’t afford all possible combinations of intervention packages. om is here to help with this kind of budget-constrained optimisation challenge for malaria modelling.</p>
-<p>First, let’s create a simple scenario to test out om. We have a country, omland, which has 10 sub-national units where different malaria intervention packages can be stratified. For each sub-national unit there are 5 different packages that could be implemented. For each sub-national unit and intervention package we can estimate the impact and cost using a malaria simulation model. Unfortunately, omland has a finite health budget and can only assign $100 to malaria interventions.</p>
-<p>How should omland spend the $100 to maximise the impact of their malaria control campaign?</p>
-<p>Let’s start with some malaria model outputs for omland. This is a data.frame showing the modelled cost and impact of each intervention package option, for each sub-national unit.</p>
+<p>We are often faced with challenging questions such as “what is the optimum mix of spatially-disaggregated interventions?”. Answering questions of this kind is usually made more difficult by the fact that, in most cases, there are budget limitations in place which mean we can’t afford all possible combinations of intervention packages. om is here to help with this kind of budget-constrained optimisation challenge for malaria modelling.</p>
+<p>First, let’s create a simple scenario to test out om. In our country, Omland, there are 10 sub-national units where different malaria intervention packages can be stratified. For each sub-national unit there are 5 different intervention packages that could be implemented. For each sub-national unit and intervention package we can estimate the impact and cost using a malaria simulation model. Unfortunately, Omland has a finite health budget and can only assign $100 to malaria interventions.</p>
+<p>How should Omland spend the $100 to maximise the impact of their malaria control campaign?</p>
+<p>Let’s start with some malaria model outputs for Omland. This is a data.frame showing the modelled cost and impact of each intervention package option, for each sub-national unit.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">omland_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>
   unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,
@@ -98,7 +98,7 @@
 <p>We also can specify the budget</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">budget</span> <span class="op">&lt;-</span> <span class="fl">100</span></code></pre></div>
-<p>To optimise omland’s budget spend in R, we need to provide some inputs as matrices, lets convert our data.frame now</p>
+<p>To optimise Omland’s budget spend in R, we need to provide some inputs as matrices, lets convert our <code>data.frame</code> now</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Each row is a spatial unit, each column and intervention package</span>
 <span class="va">impact_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">omland_output</span><span class="op">$</span><span class="va">impact</span>, nrow <span class="op">=</span> <span class="fl">10</span>, ncol <span class="op">=</span>  <span class="fl">5</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
@@ -143,12 +143,12 @@
 <span class="co">#&gt; 8   8 1    0 0              0</span>
 <span class="co">#&gt; 9   9 1    0 0              0</span>
 <span class="co">#&gt; 10 10 1    0 0              0</span></code></pre></div>
-<p>Let’s breakdown omland’s optimal solution. In the output, i represents the spatial unit and j the intervention package, so for each spatial unit, we have chosen one package. We can also see the cost and impact of each package chosen. We can see that in spatial units 1 to 5, we’ve chosen the most expensive package, and in spatial units 6 to 10 omland doesn’t spend anything. This makes sense - the interventions in spatial unit 1-5 are a lot cheaper ($s per impact) than in spatial units 5-10!</p>
-<p>We can also see that the total cost does not exceed omland’s budget of $100 - phew!</p>
+<p>Let’s breakdown Omland’s optimal solution. In the output, <code>i</code> represents the spatial unit and <code>j</code> the intervention package, so for each spatial unit, we have chosen one package. We can also see the <code>cost</code> and <code>impact</code> of each package chosen. In spatial units 1 to 5, we’ve chosen the most expensive package, and in spatial units 6 to 10 Omland doesn’t spend anything. This makes sense - the interventions in spatial unit 1-5 are a lot better value ($s per impact) than in spatial units 5-10!</p>
+<p>We can also see that the total cost does not exceed Omland’s budget of $100 - phew!</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">optimised</span><span class="op">$</span><span class="va">cost</span><span class="op">)</span>
 <span class="co">#&gt; [1] 100</span></code></pre></div>
-<p>We can check to see what happens if omland’s malaria budget increases:</p>
+<p>We can check to see what happens if Omland’s malaria budget increases:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">new_budget</span> <span class="op">&lt;-</span> <span class="fl">10000</span>
 <span class="va">optimised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/om.html">om</a></span><span class="op">(</span>z <span class="op">=</span> <span class="va">impact_matrix</span>, cost <span class="op">=</span> <span class="va">cost_matrix</span>, budget <span class="op">=</span> <span class="va">new_budget</span><span class="op">)</span>
@@ -164,8 +164,8 @@
 <span class="co">#&gt; 8   8 5  100 4            100</span>
 <span class="co">#&gt; 9   9 5  100 4            100</span>
 <span class="co">#&gt; 10 10 5  100 4            100</span></code></pre></div>
-<p>Great - now omland can afford the most expensive, and most impactful, intervention package in all subnational-units!</p>
-<p>If not all options are available for all units we can just replace them with NA</p>
+<p>Great - now Omland can afford the most expensive, and most impactful, intervention package in all sub-national units!</p>
+<p>If some sub-national units do not have all intervention package options available we can just replace them with <code>NA</code> in the impact and cost matrices</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">impact_matrix</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>
 <span class="va">cost_matrix</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>
