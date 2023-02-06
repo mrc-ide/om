@@ -29,7 +29,7 @@ brute <- function(z, cost, budget){
   # Link with cost and z
   all_opts <- all_comb |>
     dplyr::mutate(index = 1:dplyr::n()) |>
-    tidyr::pivot_longer(-.data$index, names_to = "i", values_to = "j", names_transform = list(i = as.integer)) |>
+    tidyr::pivot_longer(cols = -c("index"), names_to = "i", values_to = "j", names_transform = list(i = as.integer)) |>
     dplyr::left_join(cost_df, by = c("i", "j")) |>
     dplyr::left_join(z_df, by = c("i", "j"))
 
@@ -44,7 +44,7 @@ brute <- function(z, cost, budget){
 
   # Format
   out <- dplyr::filter(all_opts, .data$index == solution$index) |>
-    dplyr::select(.data$i, .data$j, .data$cost, .data$z) |>
+    dplyr::select(c("i", "j", "cost", "z")) |>
     dplyr::arrange(.data$i, .data$j)
 
   return(out)

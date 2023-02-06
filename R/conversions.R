@@ -35,9 +35,9 @@ allocation_output <- function(solution, budget){
     # Extract p variable indicating proportion of each budget to each unit
     ompr::get_solution(p[i, j]) |>
     dplyr::mutate(allocation = round(.data$value * budget[j], 6)) |>
-    dplyr::rename("budget_level" = .data$j) |>
-    dplyr::select(.data$i, .data$budget_level, .data$allocation) |>
-    tidyr::pivot_wider(.data$i, names_from = .data$budget_level, values_from = .data$allocation, names_prefix = "budget_level_")
+    dplyr::rename("budget_level" = "j") |>
+    dplyr::select(c("i", "budget_level", "allocation")) |>
+    tidyr::pivot_wider(id_cols = "i", names_from = "budget_level", values_from = "allocation", names_prefix = "budget_level_")
 }
 
 #' Wrangle solution output
@@ -59,6 +59,6 @@ output <- function(solution, z_df, cost_df, budget){
     dplyr::left_join(cost_df, by = c("i", "j")) |>
     dplyr::left_join(z_df, by = c("i", "j")) |>
     dplyr::arrange(.data$i) |>
-    dplyr::select(-.data$variable, -.data$value) |>
+    dplyr::select(-c("variable", "value")) |>
     dplyr::left_join(allocation, by = "i")
 }
