@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# om <img src="man/figures/om_hex.png" align="right" width=30% height=30% />
+# om <img src="man/figures/Om.png" align="right" width=30% height=30% />
 
 <!-- badges: start -->
 
