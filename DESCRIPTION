@@ -1,7 +1,7 @@
 Package: om
 Type: Package
 Title: Optimiation of Malaria Budgets
-Version: 0.1.1
+Version: 1.0.0
 Authors@R: c(
     person("Pete", "Winskill", email = "p.winskill@imperial.ac.uk", role = c("aut", "cre"))
     )
@@ -9,7 +9,7 @@ Description: om can be used to find solutions to budget-optimisation challenges.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown,

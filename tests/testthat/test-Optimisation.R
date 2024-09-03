@@ -72,7 +72,7 @@ test_that("Single budget level optimisation works", {
   expect_equal(sum(o9$z), sum(apply(z, 1, min)))
 
   # Limited budget - due to non-linearity, we expect all units to be given
-    # equal share (not all money to a single unit)
+  # equal share (not all money to a single unit)
   for(i in 1:options){
     budget <- sum(cost[,i])
     # Maximise
@@ -197,4 +197,17 @@ test_that("Input checks work", {
                "recipients must be a matrix with n unit rows and n budget level column")
   expect_error(om(z = z, cost = cost, budget = budget, recipients = recipients[1,, drop = FALSE]),
                "recipients must be a matrix with n unit rows and n budget level column")
+})
+
+test_that("Brute fails elegantly", {
+  expect_error(
+    brute("A", "B", "C"),
+    "z and cost inputs must both be matrices with the same dimensions"
+  )
+  expect_error(
+    brute(matrix(1), matrix(1), "C"),
+    "budget must be a numeric vector of length 1"
+  )
+
+
 })
