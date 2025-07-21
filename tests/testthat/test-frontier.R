@@ -35,7 +35,7 @@ test_that("threshold with keep_all returns filter column", {
   )
   res <- frontier(df, threshold = 1.5, keep_all = TRUE)
   expect_true("threshold" %in% names(res))
-  expect_equal(res$threshold, res$impact / res$cost >= 1.5)
+  expect_equal(res$threshold, res$cost / res$impact <= 1.5)
 })
 
 test_that("maximise = FALSE finds lower frontier", {
