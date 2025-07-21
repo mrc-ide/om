@@ -1,7 +1,7 @@
 Package: om
 Type: Package
 Title: Optimiation of Malaria Budgets
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
     person("Pete", "Winskill", email = "p.winskill@imperial.ac.uk", role = c("aut", "cre"))
     )
