@@ -59,13 +59,15 @@ frontier(example, threshold = thres)
 
 ## Minimising an outcome
 
-Sometimes the quantity of interest is something we want to reduce, such as the number of cases. `frontier()` assumes higher impact is better, so we can multiply the outcome by -1 before calling it. The frontier will then trace the best solutions for the minimisation problem.
+Sometimes the quantity of interest is something we want to reduce, such as the number of cases. Set `maximise = FALSE` and `frontier()` will return the lower frontier.
 
 ```{r}
 example_cases <- data.frame(cost = example$cost,
                             cases = 30 - example$impact)
-example_cases$impact <- -example_cases$cases
-front_cases <- frontier(example_cases, keep_all = TRUE)
+example_cases$impact <- example_cases$cases
+front_cases <- frontier(example_cases,
+                        keep_all = TRUE,
+                        maximise = FALSE)
 cols2 <- c(Frontier = "blue", Other = "grey70")
 status2 <- ifelse(front_cases$frontier, "Frontier", "Other")
 plot(example_cases$cost, example_cases$cases,

@@ -7,11 +7,16 @@
 #' solutions that cost more per unit impact than the specified value.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
-#' @param threshold Optional numeric value of threshold unit impact per
-#' unit spend. Solutions with `impact / cost` less than this are identified and
-#' can be removed before determining the frontier.
+#' @param threshold Optional numeric value describing the allowed
+#'   cost effectiveness. When `maximise = TRUE` solutions with
+#'   `impact / cost` less than this threshold are removed. When
+#'   `maximise = FALSE` solutions with `cost / impact` greater than the
+#'   threshold are removed.
 #' @param keep_all Logical, if `TRUE` return all supplied rows with an added
 #'   logical column `frontier`. Otherwise only frontier rows are returned.
+#' @param maximise Logical, if `TRUE` (default) the frontier is calculated
+#'   assuming higher values of `impact` are better. If `FALSE` the function
+#'   identifies the lower frontier for outcomes that should be minimised.
 #'
 #' @return A data.frame
 #' @export
@@ -22,12 +27,17 @@
 #' frontier(df)
 #' frontier(df, keep_all = TRUE)
 #' frontier(df, threshold = 1)
-frontier <- function(x, threshold = NULL, keep_all = FALSE) {
+#' frontier(df, maximise = FALSE)
+frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
   if (!is.data.frame(x)) {
     stop("x must be a data.frame")
   }
   if (!all(c("cost", "impact") %in% names(x))) {
     stop("x must contain 'cost' and 'impact' columns")
+  }
+
+  if (!is.logical(maximise) || length(maximise) != 1 || is.na(maximise)) {
+    stop("maximise must be a single logical value")
   }
 
   data <- x
@@ -36,7 +46,11 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
         !is.finite(threshold) || threshold <= 0) {
       stop("threshold must be a positive numeric value")
     }
-    threshold_keep <- data$impact / data$cost >= threshold
+    if (maximise) {
+      threshold_keep <- data$impact / data$cost >= threshold
+    } else {
+      threshold_keep <- data$cost / data$impact <= threshold
+    }
     if (keep_all) {
       data$threshold <- threshold_keep
     } else {
@@ -50,12 +64,18 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
     return(out)
   }
 
-  # 1) Sort by cost ascending, then impact descending
-  o <- order(data$cost, -data$impact)
+  if (maximise) {
+    o <- order(data$cost, -data$impact)
+  } else {
+    o <- order(data$cost, data$impact)
+  }
   sorted <- data[o, , drop = FALSE]
 
-  # 2) Keep only rows whose impact is a new maximum so far
-  keep <- sorted$impact == cummax(sorted$impact)
+  if (maximise) {
+    keep <- sorted$impact == cummax(sorted$impact)
+  } else {
+    keep <- sorted$impact == cummin(sorted$impact)
+  }
   sorted$frontier <- keep
 
   if (keep_all) {
