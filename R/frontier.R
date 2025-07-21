@@ -7,9 +7,9 @@
 #' solutions that cost more per unit impact than the specified value.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
-#' @param threshold Optional numeric value of maximum cost per unit of impact.
-#'   Solutions with `cost / impact` greater than this are removed before
-#'   determining the frontier.
+#' @param threshold Optional numeric value of threshold unit impact per
+#' unit spend. Solutions with `impact / cost` less than this are identified and
+#' can be removed before determining the frontier.
 #' @param keep_all Logical, if `TRUE` return all supplied rows with an added
 #'   logical column `frontier`. Otherwise only frontier rows are returned.
 #'
@@ -35,7 +35,12 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
     if (!is.numeric(threshold) || length(threshold) != 1 || !is.finite(threshold) || threshold <= 0) {
       stop("threshold must be a positive numeric value")
     }
-    data <- data[data$cost / data$impact <= threshold, , drop = FALSE]
+    theshold_keep <- data$impact / data$cost >= threshold
+    if(keep_all){
+      data$threshold <- theshold_keep
+    } else {
+      data <- data[theshold_keep, , drop = FALSE]
+    }
   }
 
   if (nrow(data) == 0) {
@@ -44,21 +49,16 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
     return(out)
   }
 
-  ord <- order(data$cost, -data$impact)
-  sorted <- data[ord, , drop = FALSE]
+  # 1) Sort by cost ascending, then impact descending
+  o <- order(data$cost, data$impact)
+  sorted <- data[o, , drop = FALSE]
 
-  best <- -Inf
-  flag <- logical(nrow(sorted))
-  for (i in seq_len(nrow(sorted))) {
-    if (sorted$impact[i] > best) {
-      flag[i] <- TRUE
-      best <- sorted$impact[i]
-    }
-  }
-  sorted$frontier <- flag
+  # 2) Keep only rows whose impact is a new maximum so far
+  keep <- sorted$impact == cummax(sorted$impact)
+  sorted$frontier <- keep
 
   if (keep_all) {
-    out <- sorted[order(ord), , drop = FALSE]
+    out <- sorted[order(o), , drop = FALSE]
   } else {
     out <- sorted[flag, , drop = FALSE]
   }

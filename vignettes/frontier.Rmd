@@ -29,9 +29,9 @@ set.seed(1)
 example <- data.frame(
   cost = runif(50, 1, 10)
 )
-example$impact <- 15 - example$cost + rnorm(50)
+example$impact <- 15 + example$cost + rnorm(50)
 
-thres <- 1.5
+thres <- 3
 front_all <- frontier(example, keep_all = TRUE, threshold = thres)
 ```
 
@@ -41,14 +41,14 @@ threshold are coloured **red**. The dotted line shows the threshold cost per
 impact.
 
 ```{r}
-status <- ifelse(example$cost / example$impact > thres, "Filtered",
+status <- ifelse(!front_all$threshold, "Filtered",
                  ifelse(front_all$frontier, "Frontier", "Other"))
 cols <- c(Frontier = "blue", Other = "grey50", Filtered = "red")
-plot(example$cost, example$impact,
+plot(front_all$cost, front_all$impact,
      col = cols[status], pch = 16,
      xlab = "Cost", ylab = "Impact")
-abline(a = 0, b = thres, lty = 2)
-legend("topright", legend = names(cols), col = cols, pch = 16)
+abline(a = 0, b = 3, lty = 2)
+legend("bottomright", legend = names(cols), col = cols, pch = 16)
 ```
 
 Using `frontier()` without `keep_all` returns only the frontier solutions:
