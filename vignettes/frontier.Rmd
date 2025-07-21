@@ -1,0 +1,58 @@
+---
+title: "Cost-effectiveness frontier"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Cost-effectiveness frontier}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(om)
+```
+
+This vignette demonstrates how to find the cost-effectiveness frontier using
+`frontier()`. We'll create a small simulated data set with cost and impact
+values and then highlight the solutions that lie on the frontier. We'll also
+apply a threshold to remove options that cost more than the allowed
+cost-per-impact.
+
+```{r}
+set.seed(1)
+example <- data.frame(
+  cost = runif(50, 1, 10)
+)
+example$impact <- 15 - example$cost + rnorm(50)
+
+thres <- 1.5
+front_all <- frontier(example, keep_all = TRUE, threshold = thres)
+```
+
+We can visualise the frontier relative to all generated points. Points that lie
+on the frontier are shown in **blue**, while those filtered out by the
+threshold are coloured **red**. The dotted line shows the threshold cost per
+impact.
+
+```{r}
+status <- ifelse(example$cost / example$impact > thres, "Filtered",
+                 ifelse(front_all$frontier, "Frontier", "Other"))
+cols <- c(Frontier = "blue", Other = "grey50", Filtered = "red")
+plot(example$cost, example$impact,
+     col = cols[status], pch = 16,
+     xlab = "Cost", ylab = "Impact")
+abline(a = 0, b = thres, lty = 2)
+legend("topright", legend = names(cols), col = cols, pch = 16)
+```
+
+Using `frontier()` without `keep_all` returns only the frontier solutions:
+
+```{r}
+frontier(example, threshold = thres)
+```
