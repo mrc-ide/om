@@ -3,15 +3,15 @@
 #' Identify the set of non-dominated solutions based on cost and impact.
 #'
 #' Solutions are filtered so that no remaining option has higher cost and
-#' lower or equal impact than another. An optional `threshold` removes
-#' solutions that cost more per unit impact than the specified value.
+#' lower or equal impact than another. After finding these dominant
+#' solutions an optional `threshold` removes any that cost more per unit
+#' impact than the specified value.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
 #' @param threshold Optional numeric value describing the allowed
-#'   cost effectiveness. When `maximise = TRUE` solutions with
-#'   `impact / cost` less than this threshold are removed. When
-#'   `maximise = FALSE` solutions with `cost / impact` greater than the
-#'   threshold are removed.
+#'   cost effectiveness. After identifying the frontier, solutions with
+#'   `impact / cost` below this value are discarded (or `cost / impact`
+#'   above it when `maximise = FALSE`).
 #' @param keep_all Logical, if `TRUE` return all supplied rows with an added
 #'   logical column `frontier`. Otherwise only frontier rows are returned.
 #' @param maximise Logical, if `TRUE` (default) the frontier is calculated
@@ -40,47 +40,39 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
     stop("maximise must be a single logical value")
   }
 
-  data <- x
   if (!is.null(threshold)) {
     if (!is.numeric(threshold) || length(threshold) != 1 ||
         !is.finite(threshold) || threshold <= 0) {
       stop("threshold must be a positive numeric value")
     }
-    if (maximise) {
-      threshold_keep <- data$impact / data$cost >= threshold
-    } else {
-      threshold_keep <- data$cost / data$impact <= threshold
-    }
-    if (keep_all) {
-      data$threshold <- threshold_keep
-    } else {
-      data <- data[threshold_keep, , drop = FALSE]
-    }
   }
 
-  if (nrow(data) == 0) {
-    out <- data
+  if (nrow(x) == 0) {
+    out <- x
+    if (!is.null(threshold) && keep_all) out$threshold <- numeric(0)
     if (keep_all) out$frontier <- logical(0)
     return(out)
   }
 
-  if (maximise) {
-    o <- order(data$cost, -data$impact)
-  } else {
-    o <- order(data$cost, data$impact)
-  }
-  sorted <- data[o, , drop = FALSE]
+  impact_order <- if (maximise) -x$impact else x$impact
+  o <- order(x$cost, impact_order)
+  sorted <- x[o, , drop = FALSE]
 
-  if (maximise) {
-    keep <- sorted$impact == cummax(sorted$impact)
-  } else {
-    keep <- sorted$impact == cummin(sorted$impact)
+  limit <- if (maximise) cummax(sorted$impact) else cummin(sorted$impact)
+  keep_frontier <- sorted$impact == limit
+  sorted$frontier <- keep_frontier
+
+  if (!is.null(threshold)) {
+    ratio <- if (maximise) sorted$impact / sorted$cost else sorted$cost / sorted$impact
+    threshold_keep <- if (maximise) ratio >= threshold else ratio <= threshold
+    sorted$threshold <- threshold_keep
   }
-  sorted$frontier <- keep
 
   if (keep_all) {
     out <- sorted[order(o), , drop = FALSE]
   } else {
+    keep <- keep_frontier
+    if (!is.null(threshold)) keep <- keep & threshold_keep
     out <- sorted[keep, , drop = FALSE]
   }
   rownames(out) <- NULL
