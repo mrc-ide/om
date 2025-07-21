@@ -27,3 +27,13 @@ test_that("threshold filters", {
   res <- frontier(df, threshold = 1)
   expect_true(all(res$cost %in% c(1, 2, 4)))
 })
+
+test_that("threshold with keep_all returns filter column", {
+  df <- data.frame(
+    cost = c(1, 2, 3),
+    impact = c(1, 3, 2)
+  )
+  res <- frontier(df, threshold = 1.5, keep_all = TRUE)
+  expect_true("threshold" %in% names(res))
+  expect_equal(res$threshold, res$impact / res$cost >= 1.5)
+})

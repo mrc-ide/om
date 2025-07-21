@@ -32,14 +32,15 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
 
   data <- x
   if (!is.null(threshold)) {
-    if (!is.numeric(threshold) || length(threshold) != 1 || !is.finite(threshold) || threshold <= 0) {
+    if (!is.numeric(threshold) || length(threshold) != 1 ||
+        !is.finite(threshold) || threshold <= 0) {
       stop("threshold must be a positive numeric value")
     }
-    theshold_keep <- data$impact / data$cost >= threshold
-    if(keep_all){
-      data$threshold <- theshold_keep
+    threshold_keep <- data$impact / data$cost >= threshold
+    if (keep_all) {
+      data$threshold <- threshold_keep
     } else {
-      data <- data[theshold_keep, , drop = FALSE]
+      data <- data[threshold_keep, , drop = FALSE]
     }
   }
 
@@ -50,7 +51,7 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
   }
 
   # 1) Sort by cost ascending, then impact descending
-  o <- order(data$cost, data$impact)
+  o <- order(data$cost, -data$impact)
   sorted <- data[o, , drop = FALSE]
 
   # 2) Keep only rows whose impact is a new maximum so far
@@ -60,7 +61,7 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE) {
   if (keep_all) {
     out <- sorted[order(o), , drop = FALSE]
   } else {
-    out <- sorted[flag, , drop = FALSE]
+    out <- sorted[keep, , drop = FALSE]
   }
   rownames(out) <- NULL
   return(out)
