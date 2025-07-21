@@ -11,6 +11,8 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 [![R-CMD-check](https://github.com/mrc-ide/om/workflows/R-CMD-check/badge.svg)](https://github.com/mrc-ide/om/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/mrc-ide/om/branch/main/graph/badge.svg)](https://app.codecov.io/gh/mrc-ide/om?branch=main)
+[![Codecov test
+coverage](https://codecov.io/gh/mrc-ide/om/graph/badge.svg)](https://app.codecov.io/gh/mrc-ide/om)
 <!-- badges: end -->
 
 om can be used to find solutions to budget-optimisation challenges. This
