@@ -34,7 +34,7 @@ example <- data.frame(
 )
 example$impact <- 15 + example$cost + rnorm(50)
 
-thres <- 3
+thres <- 0.3
 front_all <- frontier(example, keep_all = TRUE, threshold = thres)
 ```
 
@@ -50,7 +50,7 @@ cols <- c(Frontier = "blue", Other = "grey50", Filtered = "red")
 plot(front_all$cost, front_all$impact,
      col = cols[status], pch = 16,
      xlab = "Cost", ylab = "Impact")
-abline(a = 0, b = 3, lty = 2)
+abline(a = 0, b = 1 / thres, lty = 2)
 legend("bottomright", legend = names(cols), col = cols, pch = 16)
 ```
 
