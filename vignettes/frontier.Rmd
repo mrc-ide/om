@@ -20,9 +20,12 @@ library(om)
 
 This vignette demonstrates how to find the cost-effectiveness frontier using
 `frontier()`. We'll create a small simulated data set with cost and impact
-values and then highlight the solutions that lie on the frontier. We'll also
-apply a threshold to remove options that cost more than the allowed
-cost-per-impact.
+values and then highlight the solutions that lie on the frontier. We also apply
+a *threshold* that limits the maximum cost per unit of impact gained. The World
+Health Organization suggests that interventions costing up to 1–3 times a
+country's GDP per capita for each disability-adjusted life year (DALY) gained
+are often considered cost-effective. In our generic example this simply means
+setting an upper limit on the cost divided by impact.
 
 ```{r}
 set.seed(1)
@@ -59,23 +62,19 @@ frontier(example, threshold = thres)
 
 ## Minimising an outcome
 
-Sometimes the quantity of interest is something we want to reduce, such as the number of cases. Set `maximise = FALSE` and `frontier()` will return the lower frontier. We can also supply a *threshold* giving the maximum cost per case we are willing to pay. Any frontier points above this line are filtered out, which we mark in red below.
+Sometimes the quantity of interest is something we want to reduce, such as the number of cases. Set `maximise = FALSE` and `frontier()` will return the lower frontier. In this example we simply highlight the points that sit on that frontier.
 
 ```{r}
 example_cases <- data.frame(cost = example$cost,
                             cases = 30 - example$impact)
 example_cases$impact <- example_cases$cases
-case_thres <- 0.6
 front_cases <- frontier(example_cases,
                         keep_all = TRUE,
-                        maximise = FALSE,
-                        threshold = case_thres)
-cols2 <- c(Frontier = "blue", Other = "grey70", Filtered = "red")
-status2 <- ifelse(!front_cases$threshold, "Filtered",
-                  ifelse(front_cases$frontier, "Frontier", "Other"))
+                        maximise = FALSE)
+cols2 <- c(Frontier = "blue", Other = "grey70")
+status2 <- ifelse(front_cases$frontier, "Frontier", "Other")
 plot(front_cases$cost, front_cases$impact,
      col = cols2[status2], pch = 16,
      xlab = "Cost", ylab = "Cases")
-abline(a = 0, b = 1 / case_thres, lty = 2)
 legend("topright", legend = names(cols2), col = cols2, pch = 16)
 ```

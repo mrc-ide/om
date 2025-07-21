@@ -5,13 +5,12 @@
 #' Solutions are filtered so that no remaining option has higher cost and
 #' lower or equal impact than another. After finding these dominant
 #' solutions an optional `threshold` removes any that cost more per unit
-#' impact than the specified value.
+#' impact gained than the specified value.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
-#' @param threshold Optional numeric value describing the allowed
-#'   cost effectiveness. After identifying the frontier, solutions with
-#'   `impact / cost` below this value are discarded (or `cost / impact`
-#'   above it when `maximise = FALSE`).
+#' @param threshold Optional numeric value describing the allowed cost per
+#'   unit of impact gained. After identifying the frontier, solutions with
+#'   `cost / impact` above this value are discarded.
 #' @param keep_all Logical, if `TRUE` return all supplied rows with an added
 #'   logical column `frontier`. Otherwise only frontier rows are returned.
 #' @param maximise Logical, if `TRUE` (default) the frontier is calculated
@@ -26,7 +25,7 @@
 #'                  impact = c(1, 1.5, 2, 2.4))
 #' frontier(df)
 #' frontier(df, keep_all = TRUE)
-#' frontier(df, threshold = 1)
+#' frontier(df, threshold = 1) # maximum cost per unit impact
 #' frontier(df, maximise = FALSE)
 frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
   if (!is.data.frame(x)) {
@@ -63,8 +62,8 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
   sorted$frontier <- keep_frontier
 
   if (!is.null(threshold)) {
-    ratio <- if (maximise) sorted$impact / sorted$cost else sorted$cost / sorted$impact
-    threshold_keep <- if (maximise) ratio >= threshold else ratio <= threshold
+    ratio <- sorted$cost / sorted$impact
+    threshold_keep <- ratio <= threshold
     sorted$threshold <- threshold_keep
   }
 
