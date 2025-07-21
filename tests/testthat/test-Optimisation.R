@@ -18,10 +18,10 @@ test_that("Single budget level optimisation works", {
   budget <- 2
   # Maximise
   o3 <- om(z = z, cost = cost, budget = budget)
-  expect_equal(sum(o2$z), 4)
+  expect_equal(sum(o3$z), 4)
   # Minimise
   o4 <- om(z = z, cost = cost, budget = budget, sense = "min")
-  expect_equal(sum(o3$z), 4)
+  expect_equal(sum(o4$z), 4)
   ##############################################################################
 
   # Small examples compared to brute force search ##############################
