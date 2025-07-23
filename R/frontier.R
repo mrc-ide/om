@@ -4,30 +4,19 @@
 #'
 #' Solutions are filtered so that no remaining option has higher cost and
 #' lower or equal impact than another. After finding these dominant
-#' solutions an optional `threshold` removes any that cost more per unit
-#' impact gained than the specified value.
+#' solutions an optional `threshold` removes with ICER above a given threshold.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
 #' @param threshold Optional numeric value describing the allowed cost per
 #'   unit of impact gained. After identifying the frontier, solutions with
-#'   `cost / impact` above this value are discarded.
-#' @param keep_all Logical, if `TRUE` return all supplied rows with an added
-#'   logical column `frontier`. Otherwise only frontier rows are returned.
-#' @param maximise Logical, if `TRUE` (default) the frontier is calculated
-#'   assuming higher values of `impact` are better. If `FALSE` the function
-#'   identifies the lower frontier for outcomes that should be minimised.
+#'   ICERs above this value are discarded. We assume we start with the
+#'   cheapest dominant solution and iterate checking ICERs moving up in
+#'   solution cost from there.
 #'
-#' @return A data.frame
+#' @return A data.frame with dominant, ICER compliant solutions
 #' @export
 #'
-#' @examples
-#' df <- data.frame(cost = c(1, 2, 2, 3),
-#'                  impact = c(1, 1.5, 2, 2.4))
-#' frontier(df)
-#' frontier(df, keep_all = TRUE)
-#' frontier(df, threshold = 1) # maximum cost per unit impact
-#' frontier(df, maximise = FALSE)
-frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
+frontier <- function(x, threshold = Inf) {
   if (!is.data.frame(x)) {
     stop("x must be a data.frame")
   }
@@ -35,46 +24,31 @@ frontier <- function(x, threshold = NULL, keep_all = FALSE, maximise = TRUE) {
     stop("x must contain 'cost' and 'impact' columns")
   }
 
-  if (!is.logical(maximise) || length(maximise) != 1 || is.na(maximise)) {
-    stop("maximise must be a single logical value")
+  if (!is.numeric(threshold) || length(threshold) != 1 || threshold <= 0) {
+    stop("threshold must be a positive numeric value")
   }
 
-  if (!is.null(threshold)) {
-    if (!is.numeric(threshold) || length(threshold) != 1 ||
-        !is.finite(threshold) || threshold <= 0) {
-      stop("threshold must be a positive numeric value")
+  # Dominant solutions
+  o <- order(x$cost, -x$impact)
+  sorted <- x[o, , drop = FALSE]
+  limit <- cummax(sorted$impact)
+  dominant <- sorted$impact == limit
+  frontier_solutions <- sorted[dominant, ]
+
+  # ICER threshold filtering
+  icer_keep <- rep(TRUE, nrow(frontier_solutions))
+  cur_cost <- frontier_solutions$cost[1]
+  cur_impact <- frontier_solutions$impact[1]
+  for(i in 2:nrow(frontier_solutions)){
+    icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
+    icer_keep[i] <- icer <= threshold
+    if(icer_keep[i]){
+      cur_cost <- frontier_solutions$cost[i]
+      cur_impact <- frontier_solutions$impact[i]
     }
   }
 
-  if (nrow(x) == 0) {
-    out <- x
-    if (!is.null(threshold) && keep_all) out$threshold <- numeric(0)
-    if (keep_all) out$frontier <- logical(0)
-    return(out)
-  }
-
-  impact_order <- if (maximise) -x$impact else x$impact
-  o <- order(x$cost, impact_order)
-  sorted <- x[o, , drop = FALSE]
-
-  limit <- if (maximise) cummax(sorted$impact) else cummin(sorted$impact)
-  keep_frontier <- sorted$impact == limit
-  sorted$frontier <- keep_frontier
-
-  if (!is.null(threshold)) {
-    ratio <- sorted$cost / sorted$impact
-    threshold_keep <- ratio <= threshold
-    sorted$threshold <- threshold_keep
-  }
-
-  if (keep_all) {
-    out <- sorted[order(o), , drop = FALSE]
-  } else {
-    keep <- keep_frontier
-    if (!is.null(threshold)) keep <- keep & threshold_keep
-    out <- sorted[keep, , drop = FALSE]
-  }
-  rownames(out) <- NULL
+  out <- frontier_solutions[icer_keep,]
   return(out)
 }
 

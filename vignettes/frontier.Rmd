@@ -34,8 +34,6 @@ example <- data.frame(
 )
 example$impact <- 15 + example$cost + rnorm(50)
 
-thres <- 0.3
-front_all <- frontier(example, keep_all = TRUE, threshold = thres)
 ```
 
 We can visualise the frontier relative to all generated points. Points that lie
@@ -43,38 +41,45 @@ on the frontier are shown in **blue**, while those filtered out by the
 threshold are coloured **red**. The dotted line shows the threshold cost per
 impact.
 
-```{r}
-status <- ifelse(!front_all$threshold, "Filtered",
-                 ifelse(front_all$frontier, "Frontier", "Other"))
-cols <- c(Frontier = "blue", Other = "grey50", Filtered = "red")
-plot(front_all$cost, front_all$impact,
-     col = cols[status], pch = 16,
-     xlab = "Cost", ylab = "Impact")
-abline(a = 0, b = 1 / thres, lty = 2)
-legend("bottomright", legend = names(cols), col = cols, pch = 16)
+```{r, fig.width = 6, fig.height = 5}
+frontier_solution <- frontier(example)
+plot(
+  example$impact ~ example$cost,
+  pch = 19,
+  xlab = "Cost",
+  ylab = "Impact",
+  col = "grey50"
+  )
+points(frontier_solution$impact ~ frontier_solution$cost, col = "deeppink", pch = 19)
+legend(
+  "bottomright",
+  legend = c("Dominated solutions", "Efficient frontier"),
+  col = c("grey50", "deeppink"),
+  pch = 19,
+  bty = "n"
+)
 ```
 
-Using `frontier()` without `keep_all` returns only the frontier solutions:
+We can also drop dominant solutions that fall outside of a user-specified
+ICER threshold:
 
-```{r}
-frontier(example, threshold = thres)
+```{r, fig.width = 6, fig.height = 5}
+frontier_threshold_solution <- frontier(example, threshold = 1)
+plot(
+  example$impact ~ example$cost,
+  pch = 19,
+  xlab = "Cost",
+  ylab = "Impact",
+  col = "grey50"
+  )
+points(frontier_solution$impact ~ frontier_solution$cost, col = "deeppink", pch = 19)
+points(frontier_threshold_solution$impact ~ frontier_threshold_solution$cost, col = "dodgerblue", pch = 19)
+legend(
+  "bottomright",
+  legend = c("Dominated solutions", "Efficient frontier", "Above ICER threshold"),
+  col = c("grey50", "dodgerblue", "deeppink"),
+  pch = 19,
+  bty = "n"
+)
 ```
 
-## Minimising an outcome
-
-Sometimes the quantity of interest is something we want to reduce, such as the number of cases. Set `maximise = FALSE` and `frontier()` will return the lower frontier. In this example we simply highlight the points that sit on that frontier.
-
-```{r}
-example_cases <- data.frame(cost = example$cost,
-                            cases = 30 - example$impact)
-example_cases$impact <- example_cases$cases
-front_cases <- frontier(example_cases,
-                        keep_all = TRUE,
-                        maximise = FALSE)
-cols2 <- c(Frontier = "blue", Other = "grey70")
-status2 <- ifelse(front_cases$frontier, "Frontier", "Other")
-plot(front_cases$cost, front_cases$impact,
-     col = cols2[status2], pch = 16,
-     xlab = "Cost", ylab = "Cases")
-legend("topright", legend = names(cols2), col = cols2, pch = 16)
-```
