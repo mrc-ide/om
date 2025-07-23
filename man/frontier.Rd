@@ -4,24 +4,19 @@
 \alias{frontier}
 \title{Cost-effectiveness frontier}
 \usage{
-frontier(x, threshold = NULL, keep_all = FALSE, maximise = TRUE)
+frontier(x, threshold = Inf)
 }
 \arguments{
 \item{x}{Data frame containing `cost` and `impact` columns.}
 
 \item{threshold}{Optional numeric value describing the allowed cost per
 unit of impact gained. After identifying the frontier, solutions with
-`cost / impact` above this value are discarded.}
-
-\item{keep_all}{Logical, if `TRUE` return all supplied rows with an added
-logical column `frontier`. Otherwise only frontier rows are returned.}
-
-\item{maximise}{Logical, if `TRUE` (default) the frontier is calculated
-assuming higher values of `impact` are better. If `FALSE` the function
-identifies the lower frontier for outcomes that should be minimised.}
+ICERs above this value are discarded. We assume we start with the
+cheapest dominant solution and iterate checking ICERs moving up in
+solution cost from there.}
 }
 \value{
-A data.frame
+A data.frame with dominant, ICER compliant solutions
 }
 \description{
 Identify the set of non-dominated solutions based on cost and impact.
@@ -29,14 +24,5 @@ Identify the set of non-dominated solutions based on cost and impact.
 \details{
 Solutions are filtered so that no remaining option has higher cost and
 lower or equal impact than another. After finding these dominant
-solutions an optional `threshold` removes any that cost more per unit
-impact gained than the specified value.
-}
-\examples{
-df <- data.frame(cost = c(1, 2, 2, 3),
-                 impact = c(1, 1.5, 2, 2.4))
-frontier(df)
-frontier(df, keep_all = TRUE)
-frontier(df, threshold = 1) # maximum cost per unit impact
-frontier(df, maximise = FALSE)
+solutions an optional `threshold` removes with ICER above a given threshold.
 }
