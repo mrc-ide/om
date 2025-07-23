@@ -72,12 +72,12 @@ plot(
   ylab = "Impact",
   col = "grey50"
   )
-points(frontier_solution$impact ~ frontier_solution$cost, col = "deeppink", pch = 19)
-points(frontier_threshold_solution$impact ~ frontier_threshold_solution$cost, col = "dodgerblue", pch = 19)
+points(frontier_solution$impact ~ frontier_solution$cost, col = "dodgerblue", pch = 19)
+points(frontier_threshold_solution$impact ~ frontier_threshold_solution$cost, col = "deeppink", pch = 19)
 legend(
   "bottomright",
   legend = c("Dominated solutions", "Efficient frontier", "Above ICER threshold"),
-  col = c("grey50", "dodgerblue", "deeppink"),
+  col = c("grey50", "deeppink", "dodgerblue"),
   pch = 19,
   bty = "n"
 )
