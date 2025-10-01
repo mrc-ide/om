@@ -46,24 +46,7 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf) {
   dominant <- sorted$impact == limit
   frontier_solutions <- sorted[dominant, ]
 
-  # ICER threshold filtering
-  icer_keep <- rep(TRUE, nrow(frontier_solutions))
-  cur_cost <- frontier_solutions$cost[1]
-  cur_impact <- frontier_solutions$impact[1]
-  additional_solutions <- nrow(frontier_solutions) > 1
-  if(additional_solutions){
-    for(i in 2:nrow(frontier_solutions)){
-      icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
-      icer_keep[i] <- icer <= threshold
-      if(icer_keep[i]){
-        cur_cost <- frontier_solutions$cost[i]
-        cur_impact <- frontier_solutions$impact[i]
-      }
-    }
-  }
-  frontier_solutions <- frontier_solutions[icer_keep,]
-
-  # Convex hull filtering
+  # Convex hull filtering (removing extendedly dominated strategies)
   if(convex_hull){
     n <- nrow(frontier_solutions)
     hull_keep <- rep(FALSE, n)
@@ -80,6 +63,23 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf) {
     }
     frontier_solutions <- frontier_solutions[hull_keep,]
   }
+
+  # ICER threshold filtering
+  icer_keep <- rep(TRUE, nrow(frontier_solutions))
+  cur_cost <- frontier_solutions$cost[1]
+  cur_impact <- frontier_solutions$impact[1]
+  additional_solutions <- nrow(frontier_solutions) > 1
+  if(additional_solutions){
+    for(i in 2:nrow(frontier_solutions)){
+      icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
+      icer_keep[i] <- icer <= threshold
+      if(icer_keep[i]){
+        cur_cost <- frontier_solutions$cost[i]
+        cur_impact <- frontier_solutions$impact[i]
+      }
+    }
+  }
+  frontier_solutions <- frontier_solutions[icer_keep,]
 
   return(frontier_solutions)
 }
