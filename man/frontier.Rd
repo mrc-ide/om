@@ -4,10 +4,16 @@
 \alias{frontier}
 \title{Cost-effectiveness frontier}
 \usage{
-frontier(x, threshold = Inf)
+frontier(x, convex_hull = FALSE, threshold = Inf)
 }
 \arguments{
 \item{x}{Data frame containing `cost` and `impact` columns.}
+
+\item{convex_hull}{Logical. If TRUE, restricts results to the convex
+cost-effectiveness frontier by removing extendedly dominated strategies
+(those with non-monotonic ICERs). If FALSE, returns the full set of
+non-dominated solutions, which may be more useful for exploring how
+cost-effective options change across different budget levels.}
 
 \item{threshold}{Optional numeric value describing the allowed marginal cost per
 unit of impact gained. After identifying the frontier, solutions with
