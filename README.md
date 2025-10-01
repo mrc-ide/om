@@ -32,6 +32,8 @@ when using om (`citation("ompr")`) and be sure to check it out
 To get started, take a look at the [introductory
 vignette](https://mrc-ide.github.io/om/articles/Introduction.html)
 
+:warning: CE frontier functionality is WIP - please check outputs
+
 Updates, reviews and improvements are encouraged via
 [PRs](https://github.com/mrc-ide/om/pulls)!
 

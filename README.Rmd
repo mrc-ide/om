@@ -36,6 +36,8 @@ Please give appropriate attribution and cite the ompr package when using om
 
 To get started, take a look at the [introductory vignette](https://mrc-ide.github.io/om/articles/Introduction.html)
 
+:warning: CE frontier functionality is WIP - please check outputs
+
 Updates, reviews and improvements are encouraged via [PRs](https://github.com/mrc-ide/om/pulls)!
 
 Any issues or clarifications? Please post on the [issues page here](https://github.com/mrc-ide/om/issues).
