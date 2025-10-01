@@ -58,3 +58,17 @@ test_that("Numeric df inputs checked", {
   )
   expect_error(frontier(df), "Impact column must be numeric")
 })
+
+test_that("convex_hull removes extendedly dominated strategies", {
+  df <- data.frame(
+    cost = c(0, 60, 90, 120),
+    impact = c(0, 20, 25, 40)
+  )
+
+  res_full <- frontier(df)
+  expect_equal(res_full$cost, c(0, 60, 90, 120))
+
+  res_hull <- frontier(df, convex_hull = TRUE)
+  expect_equal(res_hull$cost, c(0, 60, 120))
+  expect_false(90 %in% res_hull$cost)
+})
