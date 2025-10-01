@@ -11,6 +11,8 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 [![R-CMD-check](https://github.com/mrc-ide/om/workflows/R-CMD-check/badge.svg)](https://github.com/mrc-ide/om/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/mrc-ide/om/branch/main/graph/badge.svg)](https://app.codecov.io/gh/mrc-ide/om?branch=main)
+[![Codecov test
+coverage](https://codecov.io/gh/mrc-ide/om/graph/badge.svg)](https://app.codecov.io/gh/mrc-ide/om)
 <!-- badges: end -->
 
 om can be used to find solutions to budget-optimisation challenges. This
@@ -29,6 +31,8 @@ when using om (`citation("ompr")`) and be sure to check it out
 
 To get started, take a look at the [introductory
 vignette](https://mrc-ide.github.io/om/articles/Introduction.html)
+
+:warning: CE frontier functionality is WIP - please check outputs
 
 Updates, reviews and improvements are encouraged via
 [PRs](https://github.com/mrc-ide/om/pulls)!
