@@ -1,14 +1,17 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
+<url><loc>/AGENTS.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/articles/Introduction.html</loc></url>
 <url><loc>/articles/complex-budgets.html</loc></url>
+<url><loc>/articles/frontier.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/reference/allocation_output.html</loc></url>
 <url><loc>/reference/brute.html</loc></url>
 <url><loc>/reference/create_model.html</loc></url>
+<url><loc>/reference/frontier.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/matrix_to_idf.html</loc></url>
 <url><loc>/reference/om.html</loc></url>
