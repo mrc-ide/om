@@ -37,9 +37,8 @@ example$impact <- 15 + example$cost + rnorm(50)
 ```
 
 We can visualise the frontier relative to all generated points. Points that lie
-on the frontier are shown in **blue**, while those filtered out by the
-threshold are coloured **red**. The dotted line shows the threshold cost per
-impact.
+on the frontier are shown in **pink**, while those filtered out by the
+threshold are coloured **blue**. Fully dominated solutions are in **grey**.
 
 ```{r, fig.width = 6, fig.height = 5}
 frontier_solution <- frontier(example)

@@ -9,7 +9,7 @@ frontier(x, threshold = Inf)
 \arguments{
 \item{x}{Data frame containing `cost` and `impact` columns.}
 
-\item{threshold}{Optional numeric value describing the allowed cost per
+\item{threshold}{Optional numeric value describing the allowed marginal cost per
 unit of impact gained. After identifying the frontier, solutions with
 ICERs above this value are discarded. We assume we start with the
 cheapest dominant solution and iterate checking ICERs moving up in

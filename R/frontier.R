@@ -7,7 +7,7 @@
 #' solutions an optional `threshold` removes with ICER above a given threshold.
 #'
 #' @param x Data frame containing `cost` and `impact` columns.
-#' @param threshold Optional numeric value describing the allowed cost per
+#' @param threshold Optional numeric value describing the allowed marginal cost per
 #'   unit of impact gained. After identifying the frontier, solutions with
 #'   ICERs above this value are discarded. We assume we start with the
 #'   cheapest dominant solution and iterate checking ICERs moving up in
@@ -22,6 +22,12 @@ frontier <- function(x, threshold = Inf) {
   }
   if (!all(c("cost", "impact") %in% names(x))) {
     stop("x must contain 'cost' and 'impact' columns")
+  }
+  if(!is.numeric(x$cost)){
+    stop("Cost column must be numeric")
+  }
+  if(!is.numeric(x$impact)){
+    stop("Impact column must be numeric")
   }
 
   if (!is.numeric(threshold) || length(threshold) != 1 || threshold <= 0) {
@@ -39,12 +45,16 @@ frontier <- function(x, threshold = Inf) {
   icer_keep <- rep(TRUE, nrow(frontier_solutions))
   cur_cost <- frontier_solutions$cost[1]
   cur_impact <- frontier_solutions$impact[1]
-  for(i in 2:nrow(frontier_solutions)){
-    icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
-    icer_keep[i] <- icer <= threshold
-    if(icer_keep[i]){
-      cur_cost <- frontier_solutions$cost[i]
-      cur_impact <- frontier_solutions$impact[i]
+
+  additional_solutions <- nrow(frontier_solutions) > 1
+  if(additional_solutions){
+    for(i in 2:nrow(frontier_solutions)){
+      icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
+      icer_keep[i] <- icer <= threshold
+      if(icer_keep[i]){
+        cur_cost <- frontier_solutions$cost[i]
+        cur_impact <- frontier_solutions$impact[i]
+      }
     }
   }
 
