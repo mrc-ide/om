@@ -91,7 +91,6 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf, start_index = NULL
     down <- list()
     down_index <- 1
     while(nrow(down_solutions) > 0){
-      print("Down")
       # If user specifies an custom filtering function
       if(!is.null(down_filter)){
         down_solutions <- down_filter(down_solutions, current)
@@ -101,13 +100,15 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf, start_index = NULL
         icers <- (down_solutions$cost - current$cost) / (down_solutions$impact - current$impact)
         icer_keep <- icers <= threshold
         down_solutions <- down_solutions[icer_keep, ]
-        # Keep the next one down (stepwise, that is the most expensive)
-        current <- tail(down_solutions, 1)
-        current$step <- -down_index
-        down[[down_index]] <- current
+        if(nrow(down_solutions) > 0){
+          # Keep the next one down (stepwise, that is the most expensive)
+          current <- tail(down_solutions, 1)
+          current$step <- -down_index
+          down[[down_index]] <- current
 
-        down_solutions <- frontier_solutions[frontier_solutions$cost < current$cost, ]
-        down_index <- down_index + 1
+          down_solutions <- frontier_solutions[frontier_solutions$cost < current$cost, ]
+          down_index <- down_index + 1
+        }
       }
     }
   }
@@ -120,7 +121,6 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf, start_index = NULL
     up <- list()
     up_index <- 1
     while(nrow(up_solutions) > 0){
-      print("Up")
       # If user specifies an custom filtering function
       if(!is.null(up_filter)){
         up_solutions <- up_filter(up_solutions, current)
@@ -130,13 +130,15 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf, start_index = NULL
         icers <- (up_solutions$cost - current$cost) / (up_solutions$impact - current$impact)
         icer_keep <- icers <= threshold
         up_solutions <- up_solutions[icer_keep, ]
-        # Keep the next one down (stepwise, that is the most cheap)
-        current <- head(up_solutions, 1)
-        current$step <- up_index
-        up[[up_index]] <- current
+        if(nrow(up_solutions) > 0){
+          # Keep the next one down (stepwise, that is the most cheap)
+          current <- head(up_solutions, 1)
+          current$step <- up_index
+          up[[up_index]] <- current
 
-        up_solutions <- frontier_solutions[frontier_solutions$cost > current$cost, ]
-        up_index <- up_index + 1
+          up_solutions <- frontier_solutions[frontier_solutions$cost > current$cost, ]
+          up_index <- up_index + 1
+        }
       }
     }
   }
