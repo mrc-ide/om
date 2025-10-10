@@ -21,7 +21,7 @@
 #' @return A data.frame with dominant, ICER compliant solutions
 #' @export
 #'
-frontier <- function(x, convex_hull = FALSE, threshold = Inf) {
+frontier <- function(x, convex_hull = FALSE, threshold = Inf, start_index = NULL, up_filter = NULL, down_filter = NULL) {
   if (!is.data.frame(x)) {
     stop("x must be a data.frame")
   }
@@ -38,6 +38,9 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf) {
   if (!is.numeric(threshold) || length(threshold) != 1 || threshold <= 0) {
     stop("threshold must be a positive numeric value")
   }
+
+  x$step <- NA
+  x$step[start_index] <- 0
 
   # Dominant solutions
   o <- order(x$cost, -x$impact)
@@ -64,22 +67,84 @@ frontier <- function(x, convex_hull = FALSE, threshold = Inf) {
     frontier_solutions <- frontier_solutions[hull_keep,]
   }
 
-  # ICER threshold filtering
-  icer_keep <- rep(TRUE, nrow(frontier_solutions))
-  cur_cost <- frontier_solutions$cost[1]
-  cur_impact <- frontier_solutions$impact[1]
-  additional_solutions <- nrow(frontier_solutions) > 1
-  if(additional_solutions){
-    for(i in 2:nrow(frontier_solutions)){
-      icer <- (frontier_solutions$cost[i] - cur_cost) / (frontier_solutions$impact[i] - cur_impact)
-      icer_keep[i] <- icer <= threshold
-      if(icer_keep[i]){
-        cur_cost <- frontier_solutions$cost[i]
-        cur_impact <- frontier_solutions$impact[i]
+  # If we start from a user-specified row
+  ## This may be dominated, so we may need to add it back in here:
+  frontier_start_index <- 1
+  if(!is.null(start_index)){
+    if(!0 %in% frontier_solutions$step){
+      frontier_solutions <- frontier_solutions |>
+        rbind(x[!is.na(x$step), ])
+    }
+    o <- order(frontier_solutions$cost, -frontier_solutions$impact)
+    frontier_solutions <- frontier_solutions[o, , drop = FALSE]
+    frontier_start_index <- which(frontier_solutions$step == 0)
+  }
+
+  # ICER and user-function threshold filtering
+  frontier_solutions$step <- 0
+  ## Moving down (lower costs)
+  down <- list()
+  if(frontier_start_index > 1){
+    current <- frontier_solutions[frontier_start_index, ]
+    down_solutions <- frontier_solutions[frontier_solutions$cost < current$cost, ]
+
+    down <- list()
+    down_index <- 1
+    while(nrow(down_solutions) > 0){
+      print("Down")
+      # If user specifies an custom filtering function
+      if(!is.null(down_filter)){
+        down_solutions <- down_filter(down_solutions, current)
+      }
+      # WTP threshold filter
+      if(nrow(down_solutions) > 0){
+        icers <- (down_solutions$cost - current$cost) / (down_solutions$impact - current$impact)
+        icer_keep <- icers <= threshold
+        down_solutions <- down_solutions[icer_keep, ]
+        # Keep the next one down (stepwise, that is the most expensive)
+        current <- tail(down_solutions, 1)
+        current$step <- -down_index
+        down[[down_index]] <- current
+
+        down_solutions <- frontier_solutions[frontier_solutions$cost < current$cost, ]
+        down_index <- down_index + 1
       }
     }
   }
-  frontier_solutions <- frontier_solutions[icer_keep,]
+
+  up <- list()
+  if(frontier_start_index < nrow(frontier_solutions)){
+    current <- frontier_solutions[frontier_start_index, ]
+    up_solutions <- frontier_solutions[frontier_solutions$cost > current$cost, ]
+
+    up <- list()
+    up_index <- 1
+    while(nrow(up_solutions) > 0){
+      print("Up")
+      # If user specifies an custom filtering function
+      if(!is.null(up_filter)){
+        up_solutions <- up_filter(up_solutions, current)
+      }
+      # WTP threshold filter
+      if(nrow(up_solutions) > 0){
+        icers <- (up_solutions$cost - current$cost) / (up_solutions$impact - current$impact)
+        icer_keep <- icers <= threshold
+        up_solutions <- up_solutions[icer_keep, ]
+        # Keep the next one down (stepwise, that is the most cheap)
+        current <- head(up_solutions, 1)
+        current$step <- up_index
+        up[[up_index]] <- current
+
+        up_solutions <- frontier_solutions[frontier_solutions$cost > current$cost, ]
+        up_index <- up_index + 1
+      }
+    }
+  }
+
+  frontier_solutions <- dplyr::bind_rows(down) |>
+    dplyr::bind_rows(frontier_solutions[frontier_start_index, ]) |>
+    dplyr::bind_rows(up) |>
+    dplyr::arrange(step)
 
   return(frontier_solutions)
 }
