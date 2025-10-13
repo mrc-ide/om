@@ -112,11 +112,11 @@ The full non-dominated set includes all strategies that are not strictly worse t
 ## Starting point
 
 By default the frontier WTP ICER assessment starts from the least costly
-frontier solution and moves stepwise up the frontier. In some cases we may want 
-to specify the starting solution and work up and down the frontier from that
-point. This is done by indexing the startiung solution in the `frontier()`. This
-starting solution will always be included in the output, even if it does not
-lie on the frontier.
+frontier solution and moves step-wise up the frontier, in the direction of 
+increasing cost solutions. In some cases we may want to specify the starting 
+solution and work up and down the frontier from that point. This is done by 
+indexing the starting solution in the `frontier()`. This starting solution will 
+always be included in the output, even if it does not lie on the frontier.
 
 ```{r, fig.width = 6, fig.height = 5}
 start_index <- 3
@@ -130,7 +130,7 @@ plot(
   )
 points(frontier_solution$impact ~ frontier_solution$cost, col = "dodgerblue", pch = 19)
 points(frontier_threshold_solution_start$impact ~ frontier_threshold_solution_start$cost, col = "deeppink", pch = 19)
-points(frontier_solution$impact[start_index] ~ frontier_solution$cost[start_index], col = "turquoise", pch = 19)
+points(example$impact[start_index] ~ example$cost[start_index], col = "turquoise", pch = 19)
 legend(
   "bottomright",
   legend = c("Dominated solutions", "Efficient frontier", "Above ICER threshold", "Starting solution"),
@@ -142,8 +142,14 @@ legend(
 
 ## Custom filtering
 
-We may want to apply other filtering moves when traversing up or fown the 
-frontier. We can define custom filter functions for this:
+We may want to apply other filtering rules when traversing up or down the 
+frontier. These may be rules that discard frontier solutions, but that capture
+important constraints for a specific analysis. We can define custom filter 
+functions to do this and pass them as arguments to the `frontier()` function.
+These functions take two arguments: 1) the available solutions and 2) the
+current solution. The internal logical can filter available solutions, returning
+a filtered set of available solutions. In the example below. we add constraints
+based on an additional column in our data (`n`). 
 
 ```{r, fig.width = 6, fig.height = 5}
 down_filter <- function(down_solutions, current){
@@ -156,7 +162,8 @@ up_filter <- function(up_solutions, current){
 
 start_index <- 3
 frontier_threshold_solution_filter <- frontier(example, threshold = 1,
-                                        down_filter = down_filter, up_filter = up_filter,
+                                        down_filter = down_filter,
+                                        up_filter = up_filter,
                                         start_index = 3)
 plot(
   example$impact ~ example$cost,
@@ -167,7 +174,7 @@ plot(
   )
 points(frontier_solution$impact ~ frontier_solution$cost, col = "dodgerblue", pch = 19)
 points(frontier_threshold_solution_filter$impact ~ frontier_threshold_solution_filter$cost, col = "deeppink", pch = 19)
-points(frontier_solution$impact[start_index] ~ frontier_solution$cost[start_index], col = "turquoise", pch = 19)
+points(example$impact[start_index] ~ example$cost[start_index], col = "turquoise", pch = 19)
 legend(
   "bottomright",
   legend = c("Dominated solutions", "Efficient frontier", "Above ICER threshold", "Starting soluation"),

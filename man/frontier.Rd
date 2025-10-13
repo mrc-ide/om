@@ -4,7 +4,14 @@
 \alias{frontier}
 \title{Cost-effectiveness frontier}
 \usage{
-frontier(x, convex_hull = FALSE, threshold = Inf)
+frontier(
+  x,
+  convex_hull = FALSE,
+  threshold = Inf,
+  start_index = NULL,
+  up_filter = NULL,
+  down_filter = NULL
+)
 }
 \arguments{
 \item{x}{Data frame containing `cost` and `impact` columns.}
@@ -20,6 +27,17 @@ unit of impact gained. After identifying the frontier, solutions with
 ICERs above this value are discarded. We assume we start with the
 cheapest dominant solution and iterate checking ICERs moving up in
 solution cost from there.}
+
+\item{start_index}{Optional integer index specifying a starting solution. The
+frontier will be estimated starting from this solution, moving both down and
+up in cost. The start solution will always be included in the output even when
+it does not lie on the frontier.}
+
+\item{up_filter}{optional up-step filtering function taking the available
+solutions and current solution as arguments to support custom filtering logic.}
+
+\item{down_filter}{optional down-step filtering function taking the available
+solutions and current solution as arguments to support custom filtering logic.}
 }
 \value{
 A data.frame with dominant, ICER compliant solutions
