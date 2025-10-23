@@ -2,51 +2,39 @@
 % Please edit documentation in R/frontier.R
 \name{frontier}
 \alias{frontier}
-\title{Cost-effectiveness frontier}
+\title{Build Cost-Effectiveness Frontier}
 \usage{
 frontier(
   x,
-  convex_hull = FALSE,
   threshold = Inf,
-  start_index = NULL,
+  start_index = 1,
   up_filter = NULL,
   down_filter = NULL
 )
 }
 \arguments{
-\item{x}{Data frame containing `cost` and `impact` columns.}
+\item{x}{A data.frame containing cost and impact data for interventions}
 
-\item{convex_hull}{Logical. If TRUE, restricts results to the convex
-cost-effectiveness frontier by removing extendedly dominated strategies
-(those with non-monotonic ICERs). If FALSE, returns the full set of
-non-dominated solutions, which may be more useful for exploring how
-cost-effective options change across different budget levels.}
+\item{threshold}{Numeric. Willingness-to-pay threshold for ICER acceptability.
+Solutions with ICERs above this threshold will be rejected. Default is Inf.}
 
-\item{threshold}{Optional numeric value describing the allowed marginal cost per
-unit of impact gained. After identifying the frontier, solutions with
-ICERs above this value are discarded. We assume we start with the
-cheapest dominant solution and iterate checking ICERs moving up in
-solution cost from there.}
+\item{start_index}{Integer. Row index of the starting solution in the original
+data.frame. The algorithm builds the frontier from this point. Default is 1.}
 
-\item{start_index}{Optional integer index specifying a starting solution. The
-frontier will be estimated starting from this solution, moving both down and
-up in cost. The start solution will always be included in the output even when
-it does not lie on the frontier.}
+\item{up_filter}{Function. Optional user-defined filter function for cost-increasing
+solutions. Should take arguments (candidates, current) and return filtered candidates.}
 
-\item{up_filter}{optional up-step filtering function taking the available
-solutions and current solution as arguments to support custom filtering logic.}
-
-\item{down_filter}{optional down-step filtering function taking the available
-solutions and current solution as arguments to support custom filtering logic.}
+\item{down_filter}{Function. Optional user-defined filter function for cost-saving
+solutions. Should take arguments (candidates, current) and return filtered candidates.}
 }
 \value{
-A data.frame with dominant, ICER compliant solutions
+A data.frame containing the frontier solutions with an additional 'step'
+  column indicating the sequence (negative values for cost-saving steps, positive
+  for cost-increasing steps, 0 for the starting solution).
 }
 \description{
-Identify the set of non-dominated solutions based on cost and impact.
-}
-\details{
-Solutions are filtered so that no remaining option has higher cost and
-lower or equal impact than another. After finding these dominant
-solutions an optional `threshold` removes with ICER above a given threshold.
+Constructs a cost-effectiveness frontier from a set of interventions by finding
+the optimal sequence of solutions moving both up (more costly) and down (less costly)
+from a specified starting point. The algorithm uses incremental cost-effectiveness
+ratios (ICERs) and willingness-to-pay thresholds to determine acceptability.
 }
