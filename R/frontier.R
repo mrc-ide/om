@@ -164,7 +164,7 @@ build_frontier_up <- function(x, start_pos, threshold, up_filter) {
 
   repeat{
     # Get candidates that cost more AND have better impact
-    candidates <- x[x$cost >= current$cost & x$impact > current$impact, , drop = FALSE]
+    candidates <- x[x$impact > current$impact, , drop = FALSE]
     if (nrow(candidates) == 0) break
 
     # Apply user filter if provided
