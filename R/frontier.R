@@ -8,8 +8,8 @@
 #' @param x A data.frame containing cost and impact data for interventions
 #' @param threshold Numeric. Willingness-to-pay threshold for ICER acceptability.
 #'   Solutions with ICERs above this threshold will be rejected. Default is Inf.
-#' @param start_index Integer. Row index of the starting solution in the original
-#'   data.frame. The algorithm builds the frontier from this point. Default is 1.
+#' @param start_index Integer. Row index of the starting solution in the x.
+#'  The algorithm builds the frontier from this point. Default is 1.
 #' @param up_filter Function. Optional user-defined filter function for cost-increasing
 #'   solutions. Should take arguments (candidates, current) and return filtered candidates.
 #' @param down_filter Function. Optional user-defined filter function for cost-saving
@@ -24,7 +24,6 @@ frontier <- function(x, threshold = Inf, start_index = 1, up_filter = NULL, down
 
   # Input validation
   validate_inputs(x, threshold, start_index)
-
 
   x$step <- NA
   x$step[start_index] <- 0
@@ -70,9 +69,9 @@ validate_inputs <- function(x, threshold, start_index) {
     stop("Cost and impact columns must be numeric")
   }
   if (!is.numeric(threshold) || length(threshold) != 1 || threshold <= 0) {
-    stop("threshold must be a positive numeric value")
+    stop("threshold must be a single positive numeric value")
   }
-  if (!is.numeric(start_index) || start_index < 1 || start_index > nrow(x)) {
+  if (!is.numeric(start_index) || start_index < 1 || start_index > nrow(x) || length(start_index) != 1) {
     stop("start_index must be a valid row number")
   }
 }
