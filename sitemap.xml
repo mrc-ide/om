@@ -10,6 +10,8 @@
 <url><loc>/index.html</loc></url>
 <url><loc>/reference/allocation_output.html</loc></url>
 <url><loc>/reference/brute.html</loc></url>
+<url><loc>/reference/build_frontier_down.html</loc></url>
+<url><loc>/reference/build_frontier_up.html</loc></url>
 <url><loc>/reference/create_model.html</loc></url>
 <url><loc>/reference/frontier.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
@@ -18,5 +20,6 @@
 <url><loc>/reference/optimise_model.html</loc></url>
 <url><loc>/reference/output.html</loc></url>
 <url><loc>/reference/tidyeval.html</loc></url>
+<url><loc>/reference/validate_inputs.html</loc></url>
 </urlset>
 

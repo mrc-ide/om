@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">om</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,33 +68,68 @@
 <pre><code><span><span class="co">#&gt; Loading required package: ROI.plugin.glpk</span></span>
 <span><span class="co">#&gt; Loading required package: ompr</span></span>
 <span><span class="co">#&gt; Loading required package: ompr.roi</span></span></code></pre>
-<p>This vignette demonstrates how to find the cost-effectiveness
-frontier using <code><a href="../reference/frontier.html">frontier()</a></code>. We’ll create a small simulated
-data set with cost and impact values and then highlight the solutions
-that lie on the frontier. We also apply a <em>threshold</em> that limits
-the maximum cost per unit of impact gained. The World Health
-Organization suggests that interventions costing up to 1–3 times a
-country’s GDP per capita for each disability-adjusted life year (DALY)
-gained are often considered cost-effective. In our generic example this
-simply means setting an upper limit on the cost divided by impact.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>Cost-effectiveness analysis helps us identify which interventions
+provide the best value for money. The cost-effectiveness frontier
+represents the set of interventions that are not dominated by
+others—meaning no other intervention provides better outcomes for the
+same or lower cost.</p>
+<p>This vignette demonstrates how to use the frontier() function to
+build cost-effectiveness frontiers from your data. We’ll explore three
+key features:</p>
+<pre><code>Basic frontier identification - finding non-dominated solutions
+Willingness-to-pay thresholds - filtering by cost-effectiveness criteria
+Custom constraints - applying additional rules during frontier construction</code></pre>
+<p>Let’s start by creating some example data representing different
+healthcare interventions:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">example</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  cost <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">&lt;-</span> <span class="fl">15</span> <span class="op">+</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
-<p>We can visualise the frontier relative to all generated points.
-Points that lie on the frontier are shown in <strong>pink</strong>.
-Fully dominated solutions are in <strong>grey</strong>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<span><span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">&lt;-</span> <span class="fl">15</span> <span class="op">+</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">example</span><span class="op">$</span><span class="va">group</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"circle"</span>, <span class="st">"square"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">example</span> <span class="op">&lt;-</span> <span class="va">example</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">example</span><span class="op">$</span><span class="va">cost</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">example</span><span class="op">$</span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Preview our data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        cost   impact  group n</span></span>
+<span><span class="co">#&gt; 10 1.074923 15.70247 circle 1</span></span>
+<span><span class="co">#&gt; 9  1.205900 15.13541 square 1</span></span>
+<span><span class="co">#&gt; 6  1.305061 16.97904 circle 5</span></span>
+<span><span class="co">#&gt; 48 1.412957 15.98355 circle 3</span></span>
+<span><span class="co">#&gt; 1  1.624248 16.35686 circle 1</span></span>
+<span><span class="co">#&gt; 46 1.855251 16.32985 circle 5</span></span></code></pre></div>
+<p>Our dataset contains 50 hypothetical interventions with:</p>
+<pre><code>cost: Implementation cost (arbitrary units)
+impact: Health impact or effectiveness measure
+group: Intervention type (for demonstration of custom filters)
+n: Additional constraint variable</code></pre>
+</div>
+<div class="section level2">
+<h2 id="basic-frontier-analysis">Basic Frontier Analysis<a class="anchor" aria-label="anchor" href="#basic-frontier-analysis"></a>
+</h2>
+<p>The simplest use of frontier() identifies all non-dominated
+solutions. These are interventions where no other option provides better
+impact for the same or lower cost:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">frontier_solution</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">frontier_solution</span><span class="op">)</span>  <span class="co"># Number of frontier solutions</span></span>
+<span><span class="co">#&gt; [1] 7</span></span></code></pre></div>
+<p>Let’s visualize this. Pink points represent the efficient
+frontier—these are your best options:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Cost"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"Impact"</span>,</span>
-<span>  col <span class="op">=</span> <span class="st">"grey50"</span></span>
-<span>  <span class="op">)</span></span>
+<span>  col <span class="op">=</span> <span class="st">"grey50"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Basic Cost-Effectiveness Frontier"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"deeppink"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span></span>
 <span>  <span class="st">"bottomright"</span>,</span>
@@ -103,64 +138,158 @@ Fully dominated solutions are in <strong>grey</strong>.</p>
 <span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
 <span>  bty <span class="op">=</span> <span class="st">"n"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="frontier_files/figure-html/unnamed-chunk-3-1.png" width="576"></p>
-<p>We can also drop dominant solutions that fall outside of a
-user-specified ICER threshold, those filtered out by the threshold are
-coloured <strong>blue</strong></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">frontier_threshold_solution</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span>, threshold <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<p><img src="frontier_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="576"></p>
+<p>The frontier shows the incremental nature of cost-effectiveness
+decisions. Each step up represents an intervention that costs more but
+provides additional impact that might justify the extra expense.
+Applying Willingness-to-Pay Thresholds</p>
+</div>
+<div class="section level2">
+<h2 id="willingness-to-pay-threshold">Willingness to pay threshold<a class="anchor" aria-label="anchor" href="#willingness-to-pay-threshold"></a>
+</h2>
+<p>In practice, we often have budget constraints or cost-effectiveness
+thresholds. The Incremental Cost-Effectiveness Ratio (ICER) measures the
+additional cost per unit of additional impact when moving from one
+intervention to the next.</p>
+<p>Let’s apply a threshold of 1.2 cost units per impact unit:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">frontier_threshold_solution</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span>, threshold <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">frontier_threshold_solution</span><span class="op">)</span>  <span class="co"># Fewer solutions now</span></span>
+<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Cost"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"Impact"</span>,</span>
+<span>  col <span class="op">=</span> <span class="st">"grey50"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Frontier with Willingness-to-Pay Threshold"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"dodgerblue"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"deeppink"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span></span>
+<span>  <span class="st">"bottomright"</span>,</span>
+<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dominated solutions"</span>, <span class="st">"Above ICER threshold"</span>, <span class="st">"Cost-effective frontier"</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey50"</span>, <span class="st">"dodgerblue"</span>, <span class="st">"deeppink"</span><span class="op">)</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
+<span>  bty <span class="op">=</span> <span class="st">"n"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="frontier_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="576"></p>
+<p>The blue points represent interventions that are technically on the
+frontier but exceed our cost-effectiveness threshold. They don’t provide
+enough “bang for the buck” to justify their additional cost.</p>
+<p>This is crucial for policy decisions: even if an intervention is
+technically efficient, it might not be worth funding if the cost per
+unit of impact is too high.</p>
+</div>
+<div class="section level2">
+<h2 id="starting-from-a-specific-point">Starting from a Specific Point<a class="anchor" aria-label="anchor" href="#starting-from-a-specific-point"></a>
+</h2>
+<p>Sometimes you want to evaluate options relative to a current
+intervention rather than starting from the cheapest option. The
+start_index parameter lets you specify any intervention as your
+reference point:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Let's start from intervention #25</span></span>
+<span><span class="va">start_index</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span><span class="va">frontier_from_start</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span>, start_index <span class="op">=</span> <span class="va">start_index</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Cost"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"Impact"</span>,</span>
-<span>  col <span class="op">=</span> <span class="st">"grey50"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"dodgerblue"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"deeppink"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
+<span>  col <span class="op">=</span> <span class="st">"grey50"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Frontier Starting from Current Intervention"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_from_start</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_from_start</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"deeppink"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">example</span><span class="op">$</span><span class="va">impact</span><span class="op">[</span><span class="va">start_index</span><span class="op">]</span> <span class="op">~</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span><span class="op">[</span><span class="va">start_index</span><span class="op">]</span>, col <span class="op">=</span> <span class="st">"turquoise"</span>, pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span></span>
 <span>  <span class="st">"bottomright"</span>,</span>
-<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dominated solutions"</span>, <span class="st">"Efficient frontier"</span>, <span class="st">"Above ICER threshold"</span><span class="op">)</span>,</span>
-<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey50"</span>, <span class="st">"deeppink"</span>, <span class="st">"dodgerblue"</span><span class="op">)</span>,</span>
+<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dominated solutions"</span>, <span class="st">"Cost-effective options"</span>, <span class="st">"Starting point"</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey50"</span>, <span class="st">"deeppink"</span>, <span class="st">"turquoise"</span><span class="op">)</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
 <span>  bty <span class="op">=</span> <span class="st">"n"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="frontier_files/figure-html/unnamed-chunk-4-1.png" width="576"></p>
-<p>We can also drop dominant solutions that are not on the convex hull
-of the frontier. That leaves solutions shown in
-<strong>Green</strong></p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">frontier_threshold_solution_hull</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span>, convex_hull <span class="op">=</span> <span class="cn">TRUE</span>, threshold <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<p><img src="frontier_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" width="576"></p>
+<p>The turquoise point shows our starting intervention. The frontier now
+includes both cost-saving options (moving left/down) and cost-increasing
+options (moving right/up) from this reference point.</p>
+</div>
+<div class="section level2">
+<h2 id="custom-filtering-rules">Custom Filtering Rules<a class="anchor" aria-label="anchor" href="#custom-filtering-rules"></a>
+</h2>
+<p>Real-world decisions often involve additional constraints beyond
+cost-effectiveness. Maybe you can only switch between certain types of
+interventions, or you have regulatory requirements. Custom filter
+functions let you encode these rules.</p>
+<p>Here’s an example where we can only move to interventions from a
+different group:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define our constraint: can only move to different intervention types</span></span>
+<span><span class="va">up_filter</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">options</span>, <span class="va">current</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">options</span><span class="op">[</span><span class="va">options</span><span class="op">$</span><span class="va">group</span> <span class="op">!=</span> <span class="va">current</span><span class="op">$</span><span class="va">group</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">frontier_with_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frontier.html">frontier</a></span><span class="op">(</span><span class="va">example</span>, up_filter <span class="op">=</span> <span class="va">up_filter</span><span class="op">)</span></span></code></pre></div>
+<p>Let’s visualize this with different shapes for different groups:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">example</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">example</span><span class="op">$</span><span class="va">cost</span>,</span>
-<span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">example</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"circle"</span>, <span class="fl">21</span>, <span class="fl">22</span><span class="op">)</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Cost"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"Impact"</span>,</span>
-<span>  col <span class="op">=</span> <span class="st">"grey50"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"dodgerblue"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_threshold_solution</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"deeppink"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">frontier_threshold_solution_hull</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_threshold_solution_hull</span><span class="op">$</span><span class="va">cost</span>, col <span class="op">=</span> <span class="st">"green"</span>, pch <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span>
+<span>  bg <span class="op">=</span> <span class="st">"grey50"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Frontier with Custom Constraints"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span></span>
+<span>  <span class="va">frontier_with_rules</span><span class="op">$</span><span class="va">impact</span> <span class="op">~</span> <span class="va">frontier_with_rules</span><span class="op">$</span><span class="va">cost</span>,</span>
+<span>  bg <span class="op">=</span> <span class="st">"deeppink"</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">frontier_with_rules</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="st">"circle"</span>, <span class="fl">21</span>, <span class="fl">22</span><span class="op">)</span>,</span>
+<span>  cex <span class="op">=</span> <span class="fl">1.2</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span></span>
 <span>  <span class="st">"bottomright"</span>,</span>
-<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Dominated solutions"</span>, <span class="st">"Extendedly dominated"</span>, <span class="st">"Above ICER threshold"</span>, <span class="st">"Efficient frontier (convex hull)"</span><span class="op">)</span>,</span>
-<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey50"</span>, <span class="st">"deeppink"</span>, <span class="st">"dodgerblue"</span>, <span class="st">"green"</span><span class="op">)</span>,</span>
-<span>  pch <span class="op">=</span> <span class="fl">19</span>,</span>
+<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Circle interventions"</span>, <span class="st">"Square interventions"</span>, <span class="st">"Constrained frontier"</span><span class="op">)</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">21</span>, <span class="fl">22</span>, <span class="fl">19</span><span class="op">)</span>,</span>
+<span>  pt.bg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey50"</span>, <span class="st">"grey50"</span>, <span class="st">"deeppink"</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"black"</span>, <span class="st">"deeppink"</span><span class="op">)</span>,</span>
 <span>  bty <span class="op">=</span> <span class="st">"n"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="frontier_files/figure-html/unnamed-chunk-5-1.png" width="576"></p>
-<p>The convex frontier is the standard approach in cost-effectiveness
-analysis: it removes extendedly dominated options so that incremental
-cost-effectiveness ratios (ICERs) increase monotonically. This
-identifies the minimal set of strategies that could be optimal when
-interventions are compared sequentially at a given willingness-to-pay
-threshold.</p>
-<p>The full non-dominated set includes all strategies that are not
-strictly worse than any other. Although some may be extendedly
-dominated, this view can be more informative when exploring how the set
-of cost-effective options might change as budgets increase or
-decrease.</p>
-  </main>
+<p><img src="frontier_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" width="576"></p>
+<p>Notice how the frontier now alternates between circles and squares,
+respecting our constraint that you can only move to a different
+intervention type. Understanding the Results</p>
+<p>The frontier() function returns your original data with an additional
+step column:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">frontier_with_rules</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cost"</span>, <span class="st">"impact"</span>, <span class="st">"group"</span>, <span class="st">"step"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       cost   impact  group step</span></span>
+<span><span class="co">#&gt; 1 1.074923 15.70247 circle    0</span></span>
+<span><span class="co">#&gt; 2 1.880677 17.07068 square    1</span></span>
+<span><span class="co">#&gt; 3 2.609065 19.68110 circle    2</span></span>
+<span><span class="co">#&gt; 4 5.774298 22.72840 square    3</span></span>
+<span><span class="co">#&gt; 5 8.593320 24.44909 circle    4</span></span>
+<span><span class="co">#&gt; 6 8.598034 24.74310 square    5</span></span></code></pre></div>
+<pre><code>step = 0: Your starting point
+Negative steps: Cost-saving moves (moving to cheaper options)
+Positive steps: Cost-increasing moves (moving to more expensive options)</code></pre>
+<p>This sequential approach mirrors real decision-making: “Given where
+we are now, what’s the next best option if we want to spend more (or
+less)?” Practical Tips</p>
+<pre><code>Data preparation: Ensure your cost and impact columns are numeric and represent the outcomes you want to optimize.
+
+Threshold selection: Choose thresholds based on your context. Healthcare often uses GDP per capita or similar economic benchmarks.
+
+Custom filters: Use these for regulatory constraints, feasibility requirements, or strategic preferences.
+
+Starting points: Use current interventions as starting points to make results more actionable for decision-makers.</code></pre>
+<p>The frontier() function provides a flexible framework for
+cost-effectiveness analysis that can adapt to your specific
+decision-making context while maintaining economic rigor.</p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
@@ -170,7 +299,7 @@ decrease.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
