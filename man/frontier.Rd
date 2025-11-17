@@ -18,8 +18,8 @@ frontier(
 \item{threshold}{Numeric. Willingness-to-pay threshold for ICER acceptability.
 Solutions with ICERs above this threshold will be rejected. Default is Inf.}
 
-\item{start_index}{Integer. Row index of the starting solution in the original
-data.frame. The algorithm builds the frontier from this point. Default is 1.}
+\item{start_index}{Integer. Row index of the starting solution in the x.
+The algorithm builds the frontier from this point. Default is 1.}
 
 \item{up_filter}{Function. Optional user-defined filter function for cost-increasing
 solutions. Should take arguments (candidates, current) and return filtered candidates.}
