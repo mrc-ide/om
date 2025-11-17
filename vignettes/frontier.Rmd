@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(om)
 ```
 
-TIntroduction
+## Introduction
 
 Cost-effectiveness analysis helps us identify which interventions provide the best value for money. The cost-effectiveness frontier represents the set of interventions that are not dominated by others—meaning no other intervention provides better outcomes for the same or lower cost.
 
